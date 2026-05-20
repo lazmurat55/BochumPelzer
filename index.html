@@ -18,7 +18,10 @@ if(localStorage.getItem('apg_schichtleiter_db')) {
 
 function setInitialTodayDate() {
     const today = new Date();
-    document.getElementById('datum').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const dateInput = document.getElementById('datum');
+    if (dateInput) {
+        dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
 }
 
 // Stammdaten der Belegschaft für das Schicht-Reporting
@@ -44,7 +47,7 @@ const codeData = {
     }
 };
 
-// Passwörter verschlüsselt oder live aus Google Sheet ziehen
+// Passwörter live aus Google Sheet ziehen
 async function loadPasswordsFromSheet() {
     try {
         const response = await fetch(`${scriptURL}?action=getSifreler&_cb=${Date.now()}`);
@@ -146,9 +149,9 @@ function startAutoRefresh() {
 
 function saveNewPassword() { alert("Passwort geändert"); enterApp(loggedInUser); }
 
-// Berechtigungsliste füllen
 function loadUserSelect(tokenDb) {
     const select = document.getElementById('rightsSelect');
+    if (!select) return;
     const users = Object.keys(tokenDb).filter(x => x !== superAdmin);
     
     let html = '<option value="">Mitarbeiter wählen...</option>' + 
@@ -183,7 +186,7 @@ function grantSchichtleiterRights() {
 }
 
 function removeSchichtleiterRight(name) {
-    if (confirm(`Möchten Sie die Berechtigung für ${name} wirklich löschen?`)) {
+    if (confirm(`Möchten Sie die Berechtigung for ${name} wirklich löschen?`)) {
         delete schichtLeiterDb[name];
         localStorage.setItem('apg_schichtleiter_db', JSON.stringify(schichtLeiterDb));
         updateManagersList();
@@ -192,14 +195,15 @@ function removeSchichtleiterRight(name) {
 }
 
 function updateManagersList() { 
+    const container = document.getElementById('currentManagersList');
+    if (!container) return;
     let listText = "Aktiv: ";
     const entries = Object.entries(schichtLeiterDb);
     if(entries.length === 0) { listText += "Keine Leiter zugewiesen"; } 
     else { listText += entries.map(([name, schicht]) => `${name} (${schicht})<span class="delete-manager-btn" onclick="removeSchichtleiterRight('${name}')" title="Löschen">✕</span>`).join(', '); }
-    document.getElementById('currentManagersList').innerHTML = listText; 
+    container.innerHTML = listText; 
 }
 
-// Schicht & Mitarbeiter-Handling
 function setSchicht(s) { 
     currentSchicht = s; 
     document.querySelectorAll('.schicht-btn').forEach(btn => {
@@ -230,28 +234,39 @@ function openWorkerOverlay() {
 function addStaff(n) { if(!selectedStaff.includes(n)) selectedStaff.push(n); closeOverlay(); renderStaff(); }
 function addManualWorker() { const v = document.getElementById('manualWorker').value.trim(); if(v) { selectedStaff.push("✍️ "+v); document.getElementById('manualWorker').value=""; closeOverlay(); renderStaff(); } }
 function closeOverlay() { document.getElementById('workerOverlay').style.display='none'; }
-function renderStaff() { document.getElementById('workerDisplayContainer').innerHTML = selectedStaff.map(s => `<div class="selected-worker"><span>${s}</span><span onclick="removeStaff('${s}')" style="color:var(--danger); cursor:pointer;">✕</span></div>`).join(""); liveCheck(); }
+
+function renderStaff() { 
+    const container = document.getElementById('workerDisplayContainer');
+    if (container) {
+        container.innerHTML = selectedStaff.map(s => `<div class="selected-worker"><span>${s}</span><span onclick="removeStaff('${s}')" style="color:var(--danger); cursor:pointer;">✕</span></div>`).join("");
+    }
+    liveCheck(); 
+}
 function removeStaff(n) { selectedStaff = selectedStaff.filter(x => x !== n); renderStaff(); }
 
 function onAnlageChange(v) { 
-    document.getElementById('ftBox').style.display = v.startsWith("PUR") ? "block" : "none"; 
-    document.getElementById('comTimeBox').style.display = v === "COM" ? "block" : "none"; 
+    const ftBox = document.getElementById('ftBox');
+    const comTimeBox = document.getElementById('comTimeBox');
+    const addArtikelBtn = document.getElementById('addArtikelBtn');
+    
+    if (ftBox) ftBox.style.display = v.startsWith("PUR") ? "block" : "none"; 
+    if (comTimeBox) comTimeBox.style.display = v === "COM" ? "block" : "none"; 
     document.getElementById('artikelContainer').innerHTML = ""; 
-    document.getElementById('addArtikelBtn').disabled = v === "";
+    if (addArtikelBtn) addArtikelBtn.disabled = v === "";
     liveCheck(); 
 }
 
-// Artikel & Maskengenerierung
 let artikelCounter = 0;
 function addArtikel() {
     const id = Date.now() + artikelCounter++; 
     const div = document.createElement('div'); div.className = "section-card artikel-row"; div.id = `art_${id}`;
+    div.style.position = "relative";
     div.innerHTML = `<button onclick="this.parentElement.remove(); liveCheck();" style="position:absolute; right:10px; top:10px; background:var(--danger); color:white; border:none; border-radius:5px; width:26px; height:26px; cursor:pointer;">✕</button>
-        <label>📌 Artikelnummer</label><input type="text" class="art-name" placeholder="z.B. 123456">
+        <label>📌 Artikelnummer</label><input type="text" class="art-name" placeholder="z.B. 123456" oninput="liveCheck()">
         ${document.getElementById('anlage').value==='COM' ? '<label>⏱️ Dauer (Min)</label><input type="number" class="art-duration" placeholder="Minuten" oninput="liveCheck()">' : ''}
         <div class="grid-2"><div><label>✅ Gutteile</label><input type="number" class="art-gut" placeholder="Stk. (Optional)" oninput="liveCheck()"></div><div><label>❌ Aus Gesamt</label><input type="number" class="art-aus-total" placeholder="Stk. (Optional)" oninput="liveCheck()"></div></div>
         <div class="status-badge" id="badge_${id}"></div><div id="rows_${id}"></div>
-        <div style="display:flex; gap:10px; margin-top:10px;"><button class="sub-btn" onclick="addRow('${id}','aus')">+ Ausschuss</button><button class="sub-btn" onclick="addRow('${id}','stoer')">+ Störung</button></div>`;
+        <div style="display:flex; gap:10px; margin-top:10px;"><button class="sub-btn" type="button" onclick="addRow('${id}','aus')">+ Ausschuss</button><button class="sub-btn" type="button" onclick="addRow('${id}','stoer')">+ Störung</button></div>`;
     document.getElementById('artikelContainer').appendChild(div);
     liveCheck();
 }
@@ -260,13 +275,15 @@ function addRow(artId, type) {
     const anl = document.getElementById('anlage').value; 
     const cat = anl==='COM'?'COM':(anl.startsWith("PUR")?'PUR':'Spritz');
     const div = document.createElement('div'); div.className="code-row";
-    div.innerHTML = `<div class="code-row-inputs">
+    
+    // Sabit klas etiketleri (Örn: aus-select veya stoer-select)
+    div.innerHTML = `<div class="code-row-inputs" style="display:flex; gap:5px; margin-top:5px;">
         <select class="${type}-select" style="flex:3;">
             ${codeData[cat][type].map(c => `<option value="${c}">${c}</option>`).join("")}
         </select>
         <input type="number" class="${type}-value" style="flex:1; min-width:80px;" placeholder="${type==='aus'?'Stk':'Min'}" oninput="liveCheck()">
-        <button onclick="this.parentElement.parentElement.remove(); liveCheck();" style="color:var(--danger); background:none; border:none; font-size:18px; cursor:pointer;">✕</button></div>
-        <input type="text" class="sonstige-input" placeholder="Grund manuell..." style="display:none;">`;
+        <button type="button" onclick="this.parentElement.parentElement.remove(); liveCheck();" style="color:var(--danger); background:none; border:none; font-size:18px; cursor:pointer;">✕</button></div>
+        <input type="text" class="sonstige-input" placeholder="Grund manuell..." style="display:none; margin-top:5px; width:100%;">`;
     
     document.getElementById(`rows_${artId}`).appendChild(div);
     const select = div.querySelector(`.${type}-select`);
@@ -275,21 +292,26 @@ function addRow(artId, type) {
     liveCheck();
 }
 
-// Live-Eingabeprüfung & Schalthebel-Freigabe
+// Güvenli ve Çökmeyen Canlı Kontrol (Live-Check)
 function liveCheck() {
     let isValid = true; 
     let cT = 0;
     const sendBtn = document.getElementById('mainSendBtn');
+    if (!sendBtn) return;
     
     const hasWorkers = selectedStaff.length > 0;
-    const hasAnlage = document.getElementById('anlage').value !== "";
+    const anlageSelect = document.getElementById('anlage');
+    const hasAnlage = anlageSelect && anlageSelect.value !== "";
     const artikelRows = document.querySelectorAll('.artikel-row');
     const hasRows = artikelRows.length > 0;
     
     artikelRows.forEach(row => {
         const id = row.id.split('_')[1]; 
-        const artName = row.querySelector('.art-name').value.trim();
-        const t = parseInt(row.querySelector('.art-aus-total').value) || 0;
+        const artNameInput = row.querySelector('.art-name');
+        const artName = artNameInput ? artNameInput.value.trim() : "";
+        
+        const ausTotalInput = row.querySelector('.art-aus-total');
+        const t = ausTotalInput ? (parseInt(ausTotalInput.value) || 0) : 0;
         
         if(!artName) isValid = false;
         
@@ -297,47 +319,47 @@ function liveCheck() {
         row.querySelectorAll('.aus-value').forEach(i => s += parseInt(i.value) || 0);
         const b = document.getElementById('badge_' + id);
         
-        if (s > 0 && t === 0) {
-            b.className="status-badge status-ok"; 
-            b.innerText = "✅ Auto-Anpassung: " + s;
-        } 
-        else if(t > 0 && t !== s) { 
-            b.className="status-badge status-ok"; 
-            b.innerText = "ℹ️ Info: " + s + " von " + t + " erfasst"; 
-        } else if(t > 0) { 
-            b.className="status-badge status-ok"; 
-            b.innerText = "✅ OK: " + s + "/" + t; 
-        } else { 
-            b.innerText=""; 
+        if (b) {
+            if (s > 0 && t === 0) {
+                b.className="status-badge status-ok"; 
+                b.innerText = "✅ Auto-Anpassung: " + s;
+            } 
+            else if(t > 0 && t !== s) { 
+                b.className="status-badge status-ok"; 
+                b.innerText = "ℹ️ Info: " + s + " von " + t + " erfasst"; 
+            } else if(t > 0) { 
+                b.className="status-badge status-ok"; 
+                b.innerText = "✅ OK: " + s + "/" + t; 
+            } else { 
+                b.innerText=""; 
+            }
         }
         
-        if(document.getElementById('anlage').value === 'COM') {
-            cT += (parseInt(row.querySelector('.art-duration').value) || 0);
+        if(anlageSelect && anlageSelect.value === 'COM') {
+            const durInput = row.querySelector('.art-duration');
+            cT += durInput ? (parseInt(durInput.value) || 0) : 0;
         }
     });
     
-    if(document.getElementById('anlage').value === 'COM') {
-        document.getElementById('comTotal').innerText = cT;
+    const comTotalContainer = document.getElementById('comTotal');
+    if(anlageSelect && anlageSelect.value === 'COM' && comTotalContainer) {
+        comTotalContainer.innerText = cT;
     }
     
-    // Aktivierungsbedingung für den Hauptbutton
-    if(hasWorkers && hasAnlage && hasRows && isValid) {
-        sendBtn.disabled = false;
-    } else {
-        sendBtn.disabled = true;
-    }
+    // Gönderim Butonu Aktivasyon Şartı
+    sendBtn.disabled = !(hasWorkers && hasAnlage && hasRows && isValid);
 }
 
 // 🚀 DATEN VERARBEITEN & AN GOOGLE SHEETS SENDEN
 async function processReport() {
     const sendBtn = document.getElementById('mainSendBtn');
+    if (!sendBtn) return;
     sendBtn.disabled = true;
     sendBtn.innerText = "⏳ Wird gesendet...";
     
     const datum = document.getElementById('datum').value;
     const anlage = document.getElementById('anlage').value;
     
-    // Formträger-Selektion auslesen (falls PUR)
     let selectedFTs = [];
     if(anlage.startsWith("PUR")) {
         document.querySelectorAll('#ftBox .ft-btn.active').forEach(btn => {
@@ -387,7 +409,7 @@ async function processReport() {
             gutteile: gutteile,
             ausschussGesamt: ausTotal,
             dauer: duration,
-            details: ausschussDetails.join(" | ")
+            details: ausschussDetails.length > 0 ? ausschussDetails.join(" | ") : "Keine Ausfälle"
         });
     });
     
@@ -399,7 +421,6 @@ async function processReport() {
         const resData = await response.json();
         if(resData.status === "success") {
             alert("🚀 Schichtbericht erfolgreich übermittelt!");
-            // Maske zurücksetzen
             document.getElementById('artikelContainer').innerHTML = "";
             selectedStaff = [];
             renderStaff();
@@ -427,6 +448,7 @@ function filterSchicht(s) {
 
 async function loadAdminDashboard() {
     const container = document.getElementById('reportsContainer');
+    if (!container) return;
     container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--primary);'>⏳ Lade Live-Schichtdaten aus Google Sheets...</p>";
     
     try {
@@ -441,10 +463,10 @@ async function loadAdminDashboard() {
         container.innerHTML = reports.map(r => `
             <div class="report-box">
                 <span class="badge-origin">${r.anlage} ${r.formtraeger ? '- ' + r.formtraeger : ''}</span>
-                <div class="report-date">📅 ${r.datum} | ⏳ ${r.schichtType} (${r.schicht})</div>
+                <div class="report-date">📅 ${r.datum} | ⏳ ${r.schichtType || ''} (${r.schicht}_Schicht)</div>
                 <div class="report-artikel">📦 Artikel: ${r.artikelName}</div>
                 <div class="report-ausschuss">✅ Gut: ${r.gutteile} Stk | ❌ Ausschuss: ${r.ausschussGesamt} Stk</div>
-                <div class="report-störung">📝 Details: ${r.details || 'Keine Ausfälle'}</div>
+                <div class="report-störung">📝 Details: ${r.details}</div>
                 <div class="report-workers">👥 Team: ${r.mitarbeiter}</div>
                 <div style="font-size:11px; margin-top:5px; color:var(--text-muted); text-align:right;">Erstellt von: ${r.user}</div>
             </div>
