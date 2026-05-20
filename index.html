@@ -9,64 +9,64 @@
         input { padding: 15px; margin: 10px; width: 250px; font-size: 16px; border-radius: 10px; border: none; }
         button { padding: 15px 40px; background: #38bdf8; color: #0f172a; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin: 10px; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 400px; margin: 50px auto; }
-        #mesaj { margin-top: 20px; font-size: 16px; }
+        #message { margin-top: 20px; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="card" id="loginBox">
     <h2>⚡ APG LOGIN TEST</h2>
-    <input type="text" id="userInp" placeholder="Kullanıcı adı"><br>
-    <input type="password" id="passInp" placeholder="Şifre"><br>
-    <button onclick="girisYap()">GİRİŞ YAP</button>
-    <div id="mesaj"></div>
+    <input type="text" id="userInp" placeholder="Nachname"><br>
+    <input type="password" id="passInp" placeholder="Passwort"><br>
+    <button onclick="login()">ANMELDEN</button>
+    <div id="message"></div>
 </div>
 
-<div class="card" id="anaEkran" style="display:none;">
-    <h2>✅ HOŞGELDİNİZ!</h2>
-    <p id="kullaniciAdi"></p>
-    <button onclick="cikisYap()">ÇIKIŞ</button>
+<div class="card" id="mainScreen" style="display:none;">
+    <h2>✅ WILLKOMMEN!</h2>
+    <p id="userName"></p>
+    <button onclick="logout()">ABMELDEN</button>
 </div>
 
 <script>
-// TEST ŞİFRELERİ
-const SIFRELER = {
+// TEST PASSWÖRTER
+const PASSWORDS = {
     "Keskin": "admin123",
     "Test": "test123"
 };
 
-function girisYap() {
-    const kullanici = document.getElementById('userInp').value.trim();
-    const sifre = document.getElementById('passInp').value.trim();
-    const mesaj = document.getElementById('mesaj');
+function login() {
+    const user = document.getElementById('userInp').value.trim();
+    const pass = document.getElementById('passInp').value.trim();
+    const message = document.getElementById('message');
     
-    console.log("Giriş denemesi:", kullanici);
+    console.log("Login Versuch:", user);
     
-    if (!kullanici || !sifre) {
-        mesaj.innerHTML = "❌ Kullanıcı adı ve şifre girin!";
-        mesaj.style.color = "red";
+    if (!user || !pass) {
+        message.innerHTML = "❌ Bitte Nachname und Passwort eingeben!";
+        message.style.color = "red";
         return;
     }
     
-    if (SIFRELER[kullanici] && SIFRELER[kullanici] === sifre) {
-        mesaj.innerHTML = "";
+    if (PASSWORDS[user] && PASSWORDS[user] === pass) {
+        message.innerHTML = "";
         document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('anaEkran').style.display = 'block';
-        document.getElementById('kullaniciAdi').innerHTML = "👤 " + kullanici;
+        document.getElementById('mainScreen').style.display = 'block';
+        document.getElementById('userName').innerHTML = "👤 " + user;
     } else {
-        mesaj.innerHTML = "❌ Hatalı kullanıcı adı veya şifre!<br><small>Deneyin: Test / test123</small>";
-        mesaj.style.color = "red";
+        message.innerHTML = "❌ Falscher Nachname oder Passwort!<br><small>Versuchen Sie: Test / test123</small>";
+        message.style.color = "red";
     }
 }
 
-function cikisYap() {
+function logout() {
     document.getElementById('loginBox').style.display = 'block';
-    document.getElementById('anaEkran').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'none';
     document.getElementById('userInp').value = '';
     document.getElementById('passInp').value = '';
 }
 
-console.log("✅ JavaScript çalışıyor!");
+console.log("✅ JavaScript bereit!");
 </script>
 
 </body>
