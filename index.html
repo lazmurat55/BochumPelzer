@@ -9,11 +9,9 @@
     <meta name="theme-color" content="#0f172a">
     <style>
         body{background:#0f172a;color:#fff;font-family:Arial;padding:10px;min-height:100vh;padding-bottom:50px}
-        html{scroll-behavior:smooth}
         #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;justify-content:center;align-items:center;z-index:999}
         .login-card{background:#1e293b;padding:30px;border-radius:20px;border:2px solid #38bdf8;width:400px;text-align:center}
-        h2{color:#38bdf8}
-        h3{color:#38bdf8;margin:0 0 10px 0}
+        h2,h3{color:#38bdf8}
         input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #475569;background:#334155;color:#fff;font-size:14px;box-sizing:border-box}
         button{padding:12px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:14px;width:100%;margin-top:10px}
         .btn-p{background:#38bdf8;color:#0f172a}
@@ -52,7 +50,6 @@
         .witem{padding:10px;border-bottom:1px solid #475569;cursor:pointer}
         .witem:hover{background:#334155;color:#38bdf8}
         .err{color:#f43f5e;font-size:13px;margin-top:8px;display:none}
-        .info{color:#94a3b8;font-size:11px;margin-top:8px}
         .rbox{background:#334155;border:1px solid #475569;padding:15px;border-radius:15px;margin-bottom:10px}
         .ban{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#38bdf8;color:#0f172a;margin-bottom:6px}
         .fbtn{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;color:#fff;font-weight:bold;font-size:13px;cursor:pointer}
@@ -97,26 +94,18 @@
 
 <div id="adminPanel">
     <div class="header">
-        <h2>📊 Admin Dashboard</h2>
+        <h2>📊 Dashboard</h2>
         <p id="adminDisp" style="color:#38bdf8;font-weight:bold;margin-top:3px"></p>
-        
-        <!-- SCHICHTLEITER ATAMA -->
         <div id="managerBox" class="manager-box" style="display:none">
-            <h3>🔐 Schichtleiter Zuweisung</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-                <select id="managerSelect" style="flex:2;min-width:180px"></select>
-                <select id="managerSchicht" style="flex:1;min-width:60px">
-                    <option value="A">A</option>
-                    <option value="B" selected>B</option>
-                    <option value="C">C</option>
-                </select>
-                <button class="btn-g" onclick="addManager()">➕ Zuweisen</button>
+            <h3>🔐 Schichtleiter</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <select id="managerSelect" style="flex:2;min-width:150px"></select>
+                <select id="managerSchicht" style="flex:1;min-width:50px"><option>A</option><option selected>B</option><option>C</option></select>
+                <button class="btn-g" onclick="addManager()">➕</button>
             </div>
             <div id="managerList" style="margin-top:10px;font-size:12px;color:#94a3b8"></div>
         </div>
-        
-        <!-- FILTRE -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto" id="filterGroup">
+        <div id="filterGroup" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto">
             <button class="fbtn" id="fA" onclick="filt('A')">🔵 A</button>
             <button class="fbtn act" id="fB" onclick="filt('B')">🟢 B</button>
             <button class="fbtn" id="fC" onclick="filt('C')">🟠 C</button>
@@ -126,49 +115,39 @@
     <div id="repCont" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px"></div>
 </div>
 
-<div id="workerOverlay"><div class="overlay"><h3 style="color:#38bdf8">👥 Mitarbeiter</h3><div id="wList"></div><input type="text" id="manW" placeholder="✏️ Manuell..."><button class="btn-s" onclick="addMan()">➕</button><button class="btn-p" onclick="closeW()">Schließen</button></div></div>
+<div id="workerOverlay"><div class="overlay"><h3>👥 Mitarbeiter</h3><div id="wList"></div><input type="text" id="manW" placeholder="✏️ Manuell..."><button class="btn-s" onclick="addMan()">➕</button><button class="btn-p" onclick="closeW()">Schließen</button></div></div>
 
 <script>
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwB7-9vLxxw8EqoQLTAzK2pttB3v1KlHbLjSKSM4FR_7JCzGf3vmU345GhmpC-jSbZ1OA/exec";
-var PW = {"Keskin":"admin123","Test":"test123","Keskin Mur.":"murat123","Keskin Mustafa":"musti123"};
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbz9yjitkqV8gS5xPfEpX1TjqCGMGb5necgLZ1E6OjFoIeFgHejG2cMiP8nH9WDe3dnQTw/exec";
+var PW={"Keskin":"admin123","Test":"test123"};
 var curUser="",curS="B",curT="Spätschicht",staff=[],artCnt=0,filtS="B";
-var schichtLeiter = {}; // Schichtleiter verileri
-
-// LocalStorage'dan yükle
-try{var saved=localStorage.getItem('apg_manager');if(saved)schichtLeiter=JSON.parse(saved);}catch(e){}
-function saveManager(){localStorage.setItem('apg_manager',JSON.stringify(schichtLeiter));}
+var schichtLeiter={};
+try{var s=localStorage.getItem('apg_manager');if(s)schichtLeiter=JSON.parse(s);}catch(e){}
+function saveM(){localStorage.setItem('apg_manager',JSON.stringify(schichtLeiter));}
 
 var WORKERS={A:["Kunert M.","Karali O.","Mikuczynski K.","Türkmen E.","Amrouch M.","Stania D.","Kantaroglu A.","Krancioch A.","Held D.","Berisha I.","Neji M.","Mulugeta G.","Udezue P.","Jansen M.","Aksoy O.","Yildirim S.","Brand N.","Louze A.","Blanquez Romero V.","Diallo M.D.","Sener E.","Klomrit","Garcia"],B:["Keskin Mur.","Aldirmaz P.","Anderwald R.","Bayrakli F.","Kilic D.","Maafi T.","Besche T.","Eickhoff P.","Toth Renata","Gibba n.","Helf A.","Isbir J.","Jeyakumar S.","Kalisch T.","Kowarsch R.","Nowak M.","Pähler D.","Patarcsity V.","Pulendran K.","Sahin E.","Savas S.","Schiavitelli","Uluyüz B.","Uzun S.","Klomrit","Garcia"],C:["Beher T.","Keskin Mustafa","Kantaroglu Ö.","Savas R.","Rafo S.","Gertz Kevin","Gertz S.","Schönborn Ch.","Fortes Ch.","Sakaguchi M.","Mercan M.","Krämer Ch.","Juretzka T.","Kumbara E.","Skupio D.","Skrago T.","Bah A.","Kaya A.","Jdea A.","Toure A.","Schneider D.","Tchaleu Bertrand","Keskinmus","Klomrit","Garcia"]};
 var CODES={PUR:{aus:["6-2-01 Temperatur zu niedrig","6-2-02 Schaum haftet nicht","6-2-03 Einlegefehler","6-2-04 Schussabbruch","6-2-05 CIM nicht voll","6-2-06 Lippe gerissen","6-2-07 CIM gerissen","7-2-01 Nacharbeit","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-2-01 Ungepl. Inst. WZ","4-2-02 Ungepl. Inst. Masch","4-2-03 Poly/Iso Überdruck","4-2-04 Mischkopf nio","4-2-05 Fehler Lichtschr.","4-2-06 Trennmittelpist.","4-2-07 Formträger Prob.","4-2-08 Reinigung WZ","4-2-09 Not Aus","5-2-01 Logistik Mangel","5-2-02 Keine Teile","5-2-04 Wartezeit Einrichter","5-2-10 Poly/Iso leer","Sonstige"]},Spritz:{aus:["6-1-01 Anfahrschrott","6-1-02 Mat-Umst.","6-1-03 CIM n.voll","6-1-04 CIM gerissen","6-1-06 Einfallstellen","6-1-07 Brandstellen","6-1-08 Silberstreifen","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-1-01 Ungepl. Inst. WZ","4-1-02 Ungepl. Inst. Masch","4-1-03 Mat-Förderung","4-1-04 Dosierprobleme","4-1-05 Schließeinheit","4-1-06 Teileentnahme","4-1-07 WZ-Heizung","4-1-08 Beflammung","5-1-01 Mat-Mangel","5-1-03 Wartezeit Einrichter","Sonstige"]},COM:{aus:["6-3-01 Anfahrschrott","6-3-02 Mat-Fehler","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-3-01 Messer schleifen","4-3-02 Ungepl. Inst. Masch","4-3-04 Silowechsel","5-3-01 Mat-Mangel","5-3-05 Feueralarm","Sonstige"]}};
 
-// ============ LOGIN ============
 function doLogin(){var u=document.getElementById('userInp').value.trim();var p=document.getElementById('passInp').value.trim();var e=document.getElementById('loginError');if(!u||!p){e.innerText="❌ Bitte alles ausfüllen!";e.style.display='block';return;}if(PW[u]&&PW[u]===p){e.style.display='none';enterApp(u);}else{e.innerText="❌ Falscher Name oder Passwort!";e.style.display='block';}}
 
 function enterApp(u){
     curUser=u;document.getElementById('loginScreen').style.display='none';
     var d=new Date();document.getElementById('datum').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    
     if(u==="Keskin"){
-        // ADMIN
         document.getElementById('adminPanel').style.display='block';
-        document.getElementById('adminDisp').innerHTML='👑 Haupt-Admin: '+u;
+        document.getElementById('adminDisp').innerHTML='👑 Admin: '+u;
         document.getElementById('managerBox').style.display='block';
         document.getElementById('filterGroup').style.display='grid';
-        loadManagerSelect();
-        loadManagerList();
-        filt('B');
+        loadManagerSelect();loadManagerList();filt('B');
     }else if(schichtLeiter[u]){
-        // SCHICHTLEITER - sadece kendi vardiyasını görür
         var s=schichtLeiter[u];
         document.getElementById('adminPanel').style.display='block';
         document.getElementById('adminDisp').innerHTML='🏃 Schichtleiter: '+u+' (Schicht '+s+')';
         document.getElementById('managerBox').style.display='none';
-        // Sadece kendi vardiya butonunu göster
         document.querySelectorAll('#filterGroup .fbtn').forEach(function(b){b.style.display='none';});
         document.getElementById('f'+s).style.display='block';
         filt(s);
     }else{
-        // NORMAL ÇALIŞAN
         document.getElementById('mainApp').style.display='block';
         document.getElementById('userDisp').innerHTML='👤 '+u;
         var f='B';
@@ -178,56 +157,26 @@ function enterApp(u){
     }
 }
 
-// ============ SCHICHTLEITER YÖNETİMİ ============
 function loadManagerSelect(){
     var sel=document.getElementById('managerSelect');
     var all=[];
     Object.values(WORKERS).forEach(function(a){a.forEach(function(w){if(all.indexOf(w)===-1&&w!=="Keskin")all.push(w);});});
     all.sort();
-    sel.innerHTML='<option value="">Mitarbeiter wählen...</option>'+all.map(function(w){return'<option value="'+w+'">'+w+'</option>';}).join('');
+    sel.innerHTML='<option value="">Mitarbeiter wählen...</option>'+all.map(function(w){return'<option>'+w+'</option>';}).join('');
 }
+function addManager(){var n=document.getElementById('managerSelect').value;var s=document.getElementById('managerSchicht').value;if(!n){alert('❌ Bitte wählen!');return;}schichtLeiter[n]=s;saveM();loadManagerList();alert('✅ '+n+' → Schicht '+s);}
+function removeManager(n){if(confirm(n+' entfernen?')){delete schichtLeiter[n];saveM();loadManagerList();}}
+function loadManagerList(){var d=document.getElementById('managerList');var e=Object.entries(schichtLeiter);d.innerHTML=e.length===0?'Keine Schichtleiter':e.map(function(x){return'<div class="manager-row"><span>'+x[0]+' → '+x[1]+'</span><span onclick="removeManager(\''+x[0]+'\')">✕</span></div>';}).join('');}
 
-function addManager(){
-    var n=document.getElementById('managerSelect').value;
-    var s=document.getElementById('managerSchicht').value;
-    if(!n){alert('❌ Bitte Mitarbeiter wählen!');return;}
-    schichtLeiter[n]=s;
-    saveManager();
-    loadManagerList();
-    alert('✅ '+n+' ist jetzt Schichtleiter für Schicht '+s);
-}
-
-function removeManager(n){
-    if(confirm('⚠️ '+n+' als Schichtleiter entfernen?')){
-        delete schichtLeiter[n];
-        saveManager();
-        loadManagerList();
-    }
-}
-
-function loadManagerList(){
-    var div=document.getElementById('managerList');
-    var entries=Object.entries(schichtLeiter);
-    if(entries.length===0){div.innerHTML='Keine Schichtleiter zugewiesen.';return;}
-    div.innerHTML=entries.map(function(e){return'<div class="manager-row"><span>'+e[0]+' → Schicht '+e[1]+'</span><span onclick="removeManager(\''+e[0]+'\')" title="Entfernen">✕</span></div>';}).join('');
-}
-
-// ============ SCHICHT ============
 function setS(s){curS=s;['A','B','C'].forEach(function(x){document.getElementById('m'+x).classList.remove('act');});document.getElementById('m'+s).classList.add('act');staff=[];renderStaff();if(s==='A')setT('Frühschicht');else if(s==='B')setT('Spätschicht');else setT('Nachtschicht');}
 function setT(t){curT=t;['tF','tS','tN'].forEach(function(x){document.getElementById(x).classList.remove('act');});if(t==='Frühschicht')document.getElementById('tF').classList.add('act');else if(t==='Spätschicht')document.getElementById('tS').classList.add('act');else document.getElementById('tN').classList.add('act');}
-
-// ============ MITARBEITER ============
 function openW(){document.getElementById('wList').innerHTML=WORKERS[curS].map(function(w){return'<div class="witem" onclick="addS(\''+w+'\')">'+w+'</div>';}).join('');document.getElementById('workerOverlay').style.display='flex';}
 function closeW(){document.getElementById('workerOverlay').style.display='none';}
 function addS(n){if(staff.indexOf(n)===-1)staff.push(n);closeW();renderStaff();}
 function addMan(){var v=document.getElementById('manW').value.trim();if(v){staff.push('✍️ '+v);document.getElementById('manW').value='';closeW();renderStaff();}}
 function remS(n){staff=staff.filter(function(x){return x!==n;});renderStaff();}
 function renderStaff(){document.getElementById('wdisp').innerHTML=staff.map(function(s){return'<span class="chip">'+s+' <span onclick="remS(\''+s+'\')">✕</span></span>';}).join('');checkF();}
-
-// ============ ANLAGE ============
 function onAn(){var v=document.getElementById('anlage').value;document.getElementById('ftBox').style.display=v.startsWith('PUR')?'block':'none';document.getElementById('comBox').style.display=v==='COM'?'block':'none';document.getElementById('artCont').innerHTML='';document.getElementById('addArtBtn').disabled=v==='';updateCom();checkF();}
-
-// ============ ARTIKEL ============
 function addArt(){var id=Date.now()+artCnt++;var an=document.getElementById('anlage').value;var cat=an==='COM'?'COM':(an.startsWith('PUR')?'PUR':'Spritz');var div=document.createElement('div');div.className='acard';div.id='a_'+id;var comF='';if(an==='COM')comF='<label>⏱️ Dauer (Min)</label><input type="number" class="adur" placeholder="Minuten" oninput="updateCom();checkF()" style="margin-bottom:6px">';div.innerHTML='<div style="display:flex;justify-content:space-between"><h4>📦 Artikel #'+artCnt+'</h4><span class="btn-d" onclick="this.closest(\'.acard\').remove();updateCom();checkF()">✕</span></div><input type="text" class="aname" placeholder="Artikelnummer" style="margin-bottom:6px">'+comF+'<div class="g2" style="margin-bottom:6px"><div><label style="margin:0;font-size:10px">✅ Gutteile</label><input type="number" class="agut" placeholder="Stk" oninput="checkF()"></div><div><label style="margin:0;font-size:10px">❌ Ausschuss Gesamt</label><input type="number" class="aaus" placeholder="Stk" oninput="checkAus(this);checkF()"></div></div><div class="raus"></div><div class="rsto"></div><div style="display:flex;gap:6px;margin-top:6px"><span class="btn-s" onclick="addRow(\''+id+'\',\'aus\',\''+cat+'\')">+ Ausschuss Grund</span><span class="btn-s" onclick="addRow(\''+id+'\',\'stoer\',\''+cat+'\')">+ Störung Grund</span></div><div class="aus-status"></div>';document.getElementById('artCont').appendChild(div);updateCom();checkF();}
 function addRow(aid,type,cat){var card=document.getElementById('a_'+aid);var cont=card.querySelector('.r'+type);var div=document.createElement('div');div.className='coderow';div.innerHTML='<select class="'+type+'-sel" onchange="togS(this)">'+CODES[cat][type].map(function(c){return'<option>'+c+'</option>';}).join('')+'</select><input type="number" class="'+type+'-val" placeholder="'+(type==='aus'?'Stk':'Min')+'" oninput="if(type===\'aus\')checkAus(this.closest(\'.acard\').querySelector(\'.aaus\'));updateCom();checkF()"><input type="text" class="sinp" placeholder="Grund manuell..." style="display:none;flex:2"><span onclick="this.closest(\'.coderow\').remove();updateCom();checkF()" style="color:#f43f5e;cursor:pointer;font-size:18px">✕</span>';cont.appendChild(div);}
 function togS(sel){sel.closest('.coderow').querySelector('.sinp').style.display=sel.value==='Sonstige'?'block':'none';}
@@ -235,22 +184,32 @@ function checkAus(input){if(!input)return;var card=input.closest('.acard');if(!c
 function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM')return;var total=0;document.querySelectorAll('.adur').forEach(function(v){total+=parseInt(v.value)||0;});document.getElementById('comTot').innerText=total;var pct=Math.min((total/480)*100,100);document.getElementById('comBar').style.width=pct+'%';var warn=document.getElementById('comWarn');if(total>480){warn.innerText='⚠️ '+(total-480)+' Min ÜBERSCHRITTEN!';warn.style.color='#f43f5e';}else if(total===480){warn.innerText='✅ Genau 480 Min!';warn.style.color='#4ade80';}else{warn.innerText='Noch '+(480-total)+' Min';warn.style.color='#38bdf8';}}
 function checkF(){var btn=document.getElementById('sendBtn');if(!btn)return;btn.disabled=!(staff.length>0&&document.getElementById('anlage').value!==''&&document.querySelectorAll('.acard').length>0);}
 
-// ============ GOOGLE SHEETS'E GÖNDER ============
 function send(){
     var btn=document.getElementById('sendBtn');btn.disabled=true;btn.innerText='⏳ SENDEN...';
-    var an=document.getElementById('anlage').value;
-    var da=document.getElementById('datum').value;
+    var an=document.getElementById('anlage').value,da=document.getElementById('datum').value;
     var fts=[];document.querySelectorAll('.ftb.act').forEach(function(b){fts.push(b.innerText);});
-    if(an==='COM'){var t=0;document.querySelectorAll('.adur').forEach(function(v){t+=parseInt(v.value)||0;});if(t>480){alert('⚠️ Compound: '+t+'/480 Min!');btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';return;}}
+    if(an==='COM'){var t=0;document.querySelectorAll('.adur').forEach(function(v){t+=parseInt(v.value)||0;});if(t>480){alert('⚠️ '+t+'/480 Min!');btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';return;}}
     var data={action:"saveReport",schicht:curS,schichtType:curT,mitarbeiter:staff.join(", "),datum:da,anlage:an,formtraeger:fts.join(", "),user:curUser,rows:[]};
     document.querySelectorAll('.acard').forEach(function(card){
-        var aname=card.querySelector('.aname').value.trim()||'Unbekannt';
-        var agut=card.querySelector('.agut').value||'0';
-        var aaus=card.querySelector('.aaus').value||'0';
-        var adur=card.querySelector('.adur')?card.querySelector('.adur').value:'';
-        var ausDetails=[],stoerDetails=[];
+        var aname=card.querySelector('.aname').value.trim()||'Unbekannt',agut=card.querySelector('.agut').value||'0',aaus=card.querySelector('.aaus').value||'0',adur=card.querySelector('.adur')?card.querySelector('.adur').value:'',ausDetails=[],stoerDetails=[];
         card.querySelectorAll('.aus-sel').forEach(function(s,i){var v=card.querySelectorAll('.aus-val')[i];if(v&&v.value){var txt=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;ausDetails.push(txt+' ('+v.value+' Stk)');}});
         card.querySelectorAll('.stoer-sel').forEach(function(s,i){var v=card.querySelectorAll('.stoer-val')[i];if(v&&v.value){var txt=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;stoerDetails.push(txt+' ('+v.value+' Min)');}});
         data.rows.push({artikelNummer:aname,dauer:adur,gutteile:agut,ausschussGesamt:aaus,ausschussDetails:ausDetails.join(" | ")||'Keine',stoerungDetails:stoerDetails.join(" | ")||'Keine'});
     });
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)})
+    .then(function(r){return r.json();})
+    .then(function(r){if(r.status==='success'){alert('✅ Gespeichert!');document.getElementById('artCont').innerHTML='';staff=[];renderStaff();document.getElementById('anlage').value='';onAn();}else{alert('❌ '+r.message);}})
+    .catch(function(e){alert('❌ '+e.message);})
+    .finally(function(){btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';checkF();});
+}
+
+function loadDash(){
+    var c=document.getElementById('repCont');c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">⏳ Laden...</p>';
+    fetch(SCRIPT_URL+'?action=getReports&schicht='+filtS)
+    .then(function(r){return r.json();})
+    .then(function(d){
+        if(!d||d.length===0){c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">📭 Keine Daten für Schicht '+filtS+'</p>';return;}
+        d.reverse();c.innerHTML='';
+        d.forEach(function(r){
+            var b=document.createElement('div');b.className='rbox';
+            b.innerHTML='<span class="ban">'+r.anlage+'</span><div style="font-size:12px;color:#e2e8f0;margin-bottom:4px">📅 '+r.datum+' | '+r.schichtType+'</div><div style="font-size:14px;font-weight:bold;color:#fff">📦 '+r.artikelNummer+'</div><div style="font-size:13px;color:#facc15;font-weight:bold">✅ Gut: '+r.gutteile+' | ❌ Aus: '+r.ausschussGes
