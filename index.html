@@ -118,53 +118,109 @@ function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM
 function checkF(){var btn=document.getElementById('sendBtn');if(!btn)return;btn.disabled=!(staff.length>0&&document.getElementById('anlage').value!==''&&document.querySelectorAll('.acard').length>0);}
 
 // ============ GOOGLE SHEETS'E GÖNDER ============
+// ============ GOOGLE SHEETS'E GÖNDER ============
 function send(){
-    var btn=document.getElementById('sendBtn');
-    btn.disabled=true;btn.innerText='⏳ SENDEN...';
+    var btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.innerText = '⏳ SENDEN...';
     
-    var an=document.getElementById('anlage').value;
-    var da=document.getElementById('datum').value;
-    var fts=[];document.querySelectorAll('.ftb.act').forEach(function(b){fts.push(b.innerText);});
+    var an = document.getElementById('anlage').value;
+    var da = document.getElementById('datum').value;
+    var fts = [];
+    document.querySelectorAll('.ftb.act').forEach(function(b){ fts.push(b.innerText); });
     
-    var data={
-        action:"saveReport",
-        schicht:curS,
-        schichtType:curT,
-        mitarbeiter:staff.join(", "),
-        datum:da,
-        anlage:an,
-        formtraeger:fts.join(", "),
-        user:curUser,
-        rows:[]
+    // Compound kontrol
+    if(an === 'COM'){
+        var t = 0;
+        document.querySelectorAll('.adur').forEach(function(v){ t += parseInt(v.value) || 0; });
+        if(t > 480){
+            alert('⚠️ Compound: ' + t + '/480 Min!');
+            btn.disabled = false;
+            btn.innerText = '🚀 SPEICHERN & SENDEN';
+            return;
+        }
+    }
+    
+    var data = {
+        action: "saveReport",
+        schicht: curS,
+        schichtType: curT,
+        mitarbeiter: staff.join(", "),
+        datum: da,
+        anlage: an,
+        formtraeger: fts.join(", "),
+        user: curUser,
+        rows: []
     };
     
     document.querySelectorAll('.acard').forEach(function(card){
-        var aname=card.querySelector('.aname').value.trim()||'Unbekannt';
-        var agut=card.querySelector('.agut').value||'0';
-        var aaus=card.querySelector('.aaus').value||'0';
-        var adur=card.querySelector('.adur')?card.querySelector('.adur').value:'';
-        var ausDetails=[],stoerDetails=[];
+        var aname = card.querySelector('.aname').value.trim() || 'Unbekannt';
+        var agut = card.querySelector('.agut').value || '0';
+        var aaus = card.querySelector('.aaus').value || '0';
+        var adur = card.querySelector('.adur') ? card.querySelector('.adur').value : '';
+        var ausDetails = [];
+        var stoerDetails = [];
         
-        card.querySelectorAll('.aus-sel').forEach(function(s,i){
-            var v=card.querySelectorAll('.aus-val')[i];
-            if(v&&v.value){var t=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;ausDetails.push(t+' ('+v.value+' Stk)');}
-        });
-        card.querySelectorAll('.stoer-sel').forEach(function(s,i){
-            var v=card.querySelectorAll('.stoer-val')[i];
-            if(v&&v.value){var t=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;stoerDetails.push(t+' ('+v.value+' Min)');}
+        card.querySelectorAll('.aus-sel').forEach(function(s, i){
+            var v = card.querySelectorAll('.aus-val')[i];
+            if(v && v.value){
+                var txt = s.value === 'Sonstige' ? 
+                    (card.querySelectorAll('.sinp')[i] ? card.querySelectorAll('.sinp')[i].value.trim() : s.value) : 
+                    s.value;
+                ausDetails.push(txt + ' (' + v.value + ' Stk)');
+            }
         });
         
-        data.rows.push({artikelNummer:aname,dauer:adur,gutteile:agut,ausschussGesamt:aaus,ausschussDetails:ausDetails.join(" | ")||'Keine',stoerungDetails:stoerDetails.join(" | ")||'Keine'});
+        card.querySelectorAll('.stoer-sel').forEach(function(s, i){
+            var v = card.querySelectorAll('.stoer-val')[i];
+            if(v && v.value){
+                var txt = s.value === 'Sonstige' ? 
+                    (card.querySelectorAll('.sinp')[i] ? card.querySelectorAll('.sinp')[i].value.trim() : s.value) : 
+                    s.value;
+                stoerDetails.push(txt + ' (' + v.value + ' Min)');
+            }
+        });
+        
+        data.rows.push({
+            artikelNummer: aname,
+            dauer: adur,
+            gutteile: agut,
+            ausschussGesamt: aaus,
+            ausschussDetails: ausDetails.join(" | ") || 'Keine',
+            stoerungDetails: stoerDetails.join(" | ") || 'Keine'
+        });
     });
     
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)})
-    .then(function(r){return r.json();})
-    .then(function(result){
-        if(result.status==='success'){alert('✅ ERFOLGREICH!\n\nSchicht '+data.schicht+' gespeichert!');document.getElementById('artCont').innerHTML='';staff=[];renderStaff();document.getElementById('anlage').value='';onAn();}
-        else{alert('❌ Fehler: '+(result.message||'Unbekannt'));}
+    // Google Sheets'e gönder
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
     })
-    .catch(function(e){alert('❌ Verbindungsfehler!\n\n'+e.message);})
-    .finally(function(){btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';checkF();});
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+        if(result.status === 'success'){
+            alert('✅ ERFOLGREICH GESPEICHERT!\n\n📊 Schicht: ' + data.schicht + ' (' + data.schichtType + ')\n🏭 Anlage: ' + data.anlage + '\n📦 Artikel: ' + data.rows.length + '\n📝 Zeilen: ' + result.savedRows + '\n\nGoogle Sheets\'e kaydedildi!');
+            
+            // Formu temizle
+            document.getElementById('artCont').innerHTML = '';
+            staff = [];
+            renderStaff();
+            document.getElementById('anlage').value = '';
+            onAn();
+        } else {
+            alert('❌ Fehler: ' + (result.message || 'Unbekannt'));
+        }
+    })
+    .catch(function(e){
+        console.error('Hata:', e);
+        alert('❌ Verbindungsfehler!\n\n' + e.message + '\n\nBitte Internetverbindung prüfen.');
+    })
+    .finally(function(){
+        btn.disabled = false;
+        btn.innerText = '🚀 SPEICHERN & SENDEN';
+        checkF();
+    });
 }
 </script>
 </body>
