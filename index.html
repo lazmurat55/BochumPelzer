@@ -2,92 +2,218 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APG BOCHUM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>APG BOCHUM SECURE PRO</title>
+    <link rel="apple-touch-icon" href="https://www.adlerpelzer.com/wp-content/uploads/2021/09/cropped-APG-Favicon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
     <style>
-        body { 
-            background: #0f172a; color: white; font-family: Arial; 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; margin: 0; padding: 20px; 
-        }
-        .card { 
-            background: #1e293b; padding: 30px; border-radius: 20px; 
-            width: 400px; text-align: center; border: 2px solid #38bdf8; 
-        }
-        h2 { color: #38bdf8; margin: 0 0 20px 0; }
-        input { 
-            width: 100%; padding: 14px; margin: 8px 0; 
-            border-radius: 10px; border: 1px solid #475569; 
-            background: #334155; color: white; font-size: 16px; 
-            box-sizing: border-box;
-        }
-        button { 
-            width: 100%; padding: 16px; background: #38bdf8; 
-            color: #0f172a; border: none; border-radius: 12px; 
-            font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; 
-        }
-        button:active { background: #0284c7; }
-        .error { color: #f43f5e; margin-top: 10px; font-size: 14px; }
-        .success { color: #4ade80; margin-top: 10px; font-size: 14px; }
+        body{background:#0f172a;color:#fff;font-family:'Segoe UI',Arial,sans-serif;padding:10px;min-height:100vh;padding-bottom:50px}
+        html{scroll-behavior:smooth}
+        #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;justify-content:center;align-items:center;z-index:9999}
+        .login-card{background:#1e293b;padding:30px;border-radius:20px;border:2px solid #38bdf8;width:95%;max-width:420px;text-align:center}
+        h2{color:#38bdf8;margin:0 0 15px 0}
+        input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #475569;background:#334155;color:#fff;font-size:14px;box-sizing:border-box}
+        input:focus,select:focus{outline:none;border-color:#38bdf8}
+        button{cursor:pointer;font-weight:bold;border:none;border-radius:10px;font-size:14px}
+        .btn-p{background:#38bdf8;color:#0f172a;width:100%;padding:14px;margin-top:10px}
+        .btn-p:disabled{background:#475569;color:#94a3b8;cursor:not-allowed}
+        .btn-o{background:transparent;border:2px dashed #38bdf8;color:#38bdf8;width:100%;padding:10px;margin-top:8px}
+        .btn-s{background:#0284c7;color:#fff;padding:6px 12px;font-size:12px}
+        .btn-d{background:#f43f5e;color:#fff;padding:6px 12px;font-size:12px}
+        #mainApp,#adminPanel{max-width:750px;background:#1e293b;padding:20px;border-radius:20px;margin:auto;border:1px solid #475569;display:none}
+        #adminPanel{max-width:1100px}
+        .header{text-align:center;border-bottom:3px solid #38bdf8;padding-bottom:10px;margin-bottom:15px}
+        .header h2{color:#38bdf8}
+        label{display:block;margin:10px 0 3px;color:#38bdf8;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.5px}
+        .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+        .sbtn{padding:10px;background:#334155;border:1px solid #475569;border-radius:8px;text-align:center;font-weight:bold;font-size:13px;cursor:pointer;transition:all 0.2s}
+        .sbtn:active{transform:scale(0.95)}
+        .sbtn.act{background:#38bdf8;color:#0f172a;border-color:#38bdf8}
+        .chip{display:inline-flex;align-items:center;gap:4px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);padding:5px 10px;border-radius:20px;font-size:12px;margin:2px}
+        .chip span{color:#f43f5e;cursor:pointer;font-weight:bold}
+        .acard{background:#334155;padding:12px;border-radius:12px;margin-top:10px;border:1px solid #475569;animation:fadeIn 0.3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .acard h4{color:#38bdf8;margin:0 0 8px 0}
+        .coderow{display:flex;gap:6px;align-items:center;margin-top:6px;background:#1e293b;padding:8px;border-radius:8px;flex-wrap:wrap}
+        .coderow select{flex:2;min-width:130px}
+        .coderow input{flex:1;min-width:50px}
+        .badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;margin-top:5px}
+        .badge-ok{background:#4ade80;color:#0f172a}
+        .badge-warn{background:#fb923c;color:#0f172a}
+        .badge-err{background:#f43f5e;color:#fff}
+        .ftg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+        .ftb{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;text-align:center;font-size:12px;font-weight:bold;cursor:pointer}
+        .ftb.act{background:#0284c7;color:#fff;border-color:#38bdf8}
+        .comtrack{background:rgba(56,189,248,0.1);border:2px solid #38bdf8;padding:12px;border-radius:12px;margin-top:10px;text-align:center}
+        .comtrack .big{font-size:26px;font-weight:bold;color:#38bdf8}
+        .comtrack .bar{height:8px;background:#334155;border-radius:4px;margin-top:8px;overflow:hidden}
+        .comtrack .fill{height:100%;background:#38bdf8;border-radius:4px;transition:all 0.3s}
+        #workerOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
+        .overlay{background:#1e293b;width:90%;max-width:450px;max-height:80vh;overflow-y:auto;border-radius:20px;padding:20px}
+        .witem{padding:10px;border-bottom:1px solid #475569;cursor:pointer;font-size:14px}
+        .witem:hover{background:#334155;color:#38bdf8}
+        .toggle-row{display:flex;align-items:center;gap:10px;padding:8px;background:#334155;border-radius:8px;margin:5px 0;font-size:13px}
+        .toggle{width:50px;height:26px;background:#475569;border-radius:13px;position:relative;cursor:pointer;flex-shrink:0;transition:background 0.3s}
+        .toggle.on{background:#4ade80}
+        .toggle:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left 0.3s}
+        .toggle.on:after{left:27px}
+        .err{color:#f43f5e;font-size:13px;margin-top:8px;display:none}
+        .info{color:#94a3b8;font-size:11px;margin-top:8px}
+        .logo-img{width:60px;height:60px;border-radius:15px;margin-bottom:10px}
+        .rgrid{display:grid;grid-template-columns:1fr;gap:15px;margin-top:15px}
+        @media(min-width:768px){.rgrid{grid-template-columns:1fr 1fr}}
+        @media(min-width:1100px){.rgrid{grid-template-columns:1fr 1fr 1fr}}
+        .rbox{background:#334155;border:1px solid #475569;padding:15px;border-radius:15px}
+        .ban{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#38bdf8;color:#0f172a;margin-bottom:6px}
+        .fgroup{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto}
+        .fbtn{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;text-align:center;font-weight:bold;font-size:13px;cursor:pointer}
+        .fbtn.act{background:#0284c7;border-color:#38bdf8}
     </style>
 </head>
 <body>
 
-<div class="card" id="loginBox">
-    <h2>⚡ APG LOGIN</h2>
-    <p style="color:#94a3b8; margin-bottom:15px;">Nachname und Passwort</p>
-    <input type="text" id="userInp" placeholder="Nachname">
-    <input type="password" id="passInp" placeholder="Passwort">
-    <button onclick="doLogin()">ANMELDEN</button>
-    <div id="msg"></div>
-    <p style="color:#64748b; font-size:12px; margin-top:15px;">Test: Test / test123</p>
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <img src="https://www.adlerpelzer.com/wp-content/uploads/2021/09/cropped-APG-Favicon-192x192.png" alt="APG" class="logo-img" onerror="this.style.display='none'">
+        <h2>⚡ APG LOGIN</h2>
+        <p style="color:#94a3b8;margin-bottom:15px">Adler Pelzer Group - Bochum</p>
+        <input type="text" id="userInp" placeholder="Nachname">
+        <input type="password" id="passInp" placeholder="Passwort">
+        <button class="btn-p" onclick="doLogin()">ANMELDEN</button>
+        <p id="loginError" class="err"></p>
+        <p class="info">Test: Test / test123 | Admin: Keskin / admin123</p>
+    </div>
 </div>
 
-<div class="card" id="welcomeBox" style="display:none;">
-    <h2>✅ WILLKOMMEN!</h2>
-    <p id="welcomeUser" style="font-size:18px; margin:20px 0;"></p>
-    <button onclick="doLogout()">ABMELDEN</button>
+<!-- MAIN APP -->
+<div id="mainApp">
+    <div class="header"><h2>Adler Pelzer Group</h2><p id="userDisp" style="color:#4ade80;font-weight:bold;margin-top:5px"></p></div>
+    <div class="g2">
+        <div><label>📌 Schicht</label><div class="g3"><div class="sbtn" id="mA" onclick="setS('A')">A</div><div class="sbtn act" id="mB" onclick="setS('B')">B</div><div class="sbtn" id="mC" onclick="setS('C')">C</div></div></div>
+        <div><label>⏳ Schichtart</label><div class="g3"><div class="sbtn" id="tF" onclick="setT('Frühschicht')">Früh</div><div class="sbtn act" id="tS" onclick="setT('Spätschicht')">Spät</div><div class="sbtn" id="tN" onclick="setT('Nachtschicht')">Nacht</div></div></div>
+    </div>
+    <label>👥 Mitarbeiter</label>
+    <div id="wdisp" style="display:flex;flex-wrap:wrap;gap:3px;min-height:25px;margin-bottom:8px"></div>
+    <button class="btn-o" onclick="openW()">➕ Mitarbeiter hinzufügen</button>
+    <div class="g2" style="margin-top:10px">
+        <div><label>📅 Datum</label><input type="date" id="datum"></div>
+        <div><label>🏭 Anlage</label><select id="anlage" onchange="onAn()"><option value="">Bitte wählen...</option><optgroup label="PUR"><option>PUR1</option><option>PUR2</option><option>PUR3</option><option>PUR4</option><option>PUR5</option><option>PUR6</option><option>PUR7</option><option>PUR8</option><option>PUR9</option></optgroup><optgroup label="Spritzguss"><option>IM1</option><option>IM2</option><option>IM3</option><option>IM4</option><option>IM5</option><option>CIM1</option></optgroup><option>COM</option></select></div>
+    </div>
+    <div id="ftBox" style="display:none;margin-top:10px"><label>🧩 Formträger</label><div class="ftg"><div class="ftb" onclick="this.classList.toggle('act')">FT1</div><div class="ftb" onclick="this.classList.toggle('act')">FT2</div><div class="ftb" onclick="this.classList.toggle('act')">FT3</div><div class="ftb" onclick="this.classList.toggle('act')">FT4</div><div class="ftb" onclick="this.classList.toggle('act')">FT5</div><div class="ftb" onclick="this.classList.toggle('act')">FT6</div></div></div>
+    <div id="comBox" style="display:none"><div class="comtrack"><span style="color:#38bdf8;font-weight:bold">⏱️ COMPOUND ZEIT</span><div class="big"><span id="comTot">0</span> / 480 Min</div><div class="bar"><div class="fill" id="comBar" style="width:0%"></div></div><span id="comWarn" style="font-size:12px;color:#4ade80"></span></div></div>
+    <div id="artCont"></div>
+    <button class="btn-o" id="addArtBtn" disabled onclick="addArt()">📦 + Artikel hinzufügen</button>
+    <button class="btn-p" id="sendBtn" disabled onclick="send()">🚀 SPEICHERN & SENDEN</button>
 </div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+    <div class="header" style="border-bottom:none"><h2>📊 APG Admin Dashboard</h2><p id="adminDisp" style="color:#38bdf8;font-weight:bold;margin-top:3px"></p>
+        <div style="background:rgba(56,189,248,0.1);padding:15px;border-radius:10px;margin:10px 0;text-align:left">
+            <h3 style="color:#38bdf8;margin:0 0 10px 0">🔐 Passwort Verwaltung</h3>
+            <div id="pwList"></div>
+            <button class="btn-s" onclick="loadPWList()" style="margin-top:10px">🔄 Aktualisieren</button>
+        </div>
+        <div class="fgroup"><div class="fbtn" id="fA" onclick="filt('A')">🔵 A</div><div class="fbtn act" id="fB" onclick="filt('B')">🟢 B</div><div class="fbtn" id="fC" onclick="filt('C')">🟠 C</div></div>
+        <button class="btn-s" onclick="loadDash()" style="margin:8px auto;display:block">🔄 Dashboard Aktualisieren</button>
+    </div>
+    <div id="repCont" class="rgrid"></div>
+</div>
+
+<!-- WORKER OVERLAY -->
+<div id="workerOverlay"><div class="overlay"><h3 style="color:#38bdf8">👥 Mitarbeiter</h3><div id="wList"></div><input type="text" id="manW" placeholder="✏️ Manuell..." style="margin:8px 0"><button class="btn-s" onclick="addMan()">➕</button><button class="btn-p" onclick="closeW()" style="margin-top:8px">Schließen</button></div></div>
 
 <script>
-// Basit şifre listesi
-var passwords = {
-    "Keskin": "admin123",
-    "Test": "test123"
-};
+// ============ APG BOCHUM SECURE PRO - GOOGLE SHEETS ENTEGRE ============
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9yjitkqV8gS5xPfEpX1TjqCGMGb5necgLZ1E6OjFoIeFgHejG2cMiP8nH9WDe3dnQTw/exec";
+var LOCAL_PW = {"Keskin":"admin123","Test":"test123","Keskin Mur.":"murat123","Keskin Mustafa":"musti123"};
+var googlePW = {};
+var curUser="", curS="B", curT="Spätschicht", staff=[], artCnt=0;
 
-function doLogin() {
-    var user = document.getElementById('userInp').value.trim();
-    var pass = document.getElementById('passInp').value.trim();
-    var msg = document.getElementById('msg');
-    
-    // Boş kontrol
-    if (user === '' || pass === '') {
-        msg.innerHTML = '❌ Bitte alles ausfüllen!';
-        msg.className = 'error';
-        return;
-    }
-    
-    // Şifre kontrol
-    if (passwords[user] && passwords[user] === pass) {
-        msg.innerHTML = '';
-        document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('welcomeBox').style.display = 'block';
-        document.getElementById('welcomeUser').innerHTML = '👤 ' + user;
-    } else {
-        msg.innerHTML = '❌ Falscher Name oder Passwort!';
-        msg.className = 'error';
-    }
+// Local'den yükle
+try{var saved=localStorage.getItem('apg_pw');if(saved)LOCAL_PW=JSON.parse(saved);}catch(e){}
+function savePW(){localStorage.setItem('apg_pw',JSON.stringify(LOCAL_PW));}
+
+// WORKERS
+var WORKERS={A:["Kunert M.","Karali O.","Mikuczynski K.","Türkmen E.","Amrouch M.","Stania D.","Kantaroglu A.","Krancioch A.","Held D.","Berisha I.","Neji M.","Mulugeta G.","Udezue P.","Jansen M.","Aksoy O.","Yildirim S.","Brand N.","Louze A.","Blanquez Romero V.","Diallo M.D.","Sener E.","Klomrit","Garcia"],B:["Keskin Mur.","Aldirmaz P.","Anderwald R.","Bayrakli F.","Kilic D.","Maafi T.","Besche T.","Eickhoff P.","Toth Renata","Gibba n.","Helf A.","Isbir J.","Jeyakumar S.","Kalisch T.","Kowarsch R.","Nowak M.","Pähler D.","Patarcsity V.","Pulendran K.","Sahin E.","Savas S.","Schiavitelli","Uluyüz B.","Uzun S.","Klomrit","Garcia"],C:["Beher T.","Keskin Mustafa","Kantaroglu Ö.","Savas R.","Rafo S.","Gertz Kevin","Gertz S.","Schönborn Ch.","Fortes Ch.","Sakaguchi M.","Mercan M.","Krämer Ch.","Juretzka T.","Kumbara E.","Skupio D.","Skrago T.","Bah A.","Kaya A.","Jdea A.","Toure A.","Schneider D.","Tchaleu Bertrand","Keskinmus","Klomrit","Garcia"]};
+var CODES={PUR:{aus:["6-2-01 Temperatur zu niedrig","6-2-02 Schaum haftet nicht","6-2-03 Einlegefehler","6-2-04 Schussabbruch","6-2-05 CIM nicht voll","6-2-06 Lippe gerissen","6-2-07 CIM gerissen","7-2-01 Nacharbeit","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-2-01 Ungepl. Inst. WZ","4-2-02 Ungepl. Inst. Masch","4-2-03 Poly/Iso Überdruck","4-2-04 Mischkopf nio","4-2-05 Fehler Lichtschr.","4-2-06 Trennmittelpist.","4-2-07 Formträger Prob.","4-2-08 Reinigung WZ","4-2-09 Not Aus","5-2-01 Logistik Mangel","5-2-02 Keine Teile","5-2-04 Wartezeit Einrichter","5-2-10 Poly/Iso leer","Sonstige"]},Spritz:{aus:["6-1-01 Anfahrschrott","6-1-02 Mat-Umst.","6-1-03 CIM n.voll","6-1-04 CIM gerissen","6-1-06 Einfallstellen","6-1-07 Brandstellen","6-1-08 Silberstreifen","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-1-01 Ungepl. Inst. WZ","4-1-02 Ungepl. Inst. Masch","4-1-03 Mat-Förderung","4-1-04 Dosierprobleme","4-1-05 Schließeinheit","4-1-06 Teileentnahme","4-1-07 WZ-Heizung","4-1-08 Beflammung","5-1-01 Mat-Mangel","5-1-03 Wartezeit Einrichter","Sonstige"]},COM:{aus:["6-3-01 Anfahrschrott","6-3-02 Mat-Fehler","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-3-01 Messer schleifen","4-3-02 Ungepl. Inst. Masch","4-3-04 Silowechsel","5-3-01 Mat-Mangel","5-3-05 Feueralarm","Sonstige"]}};
+
+// ============ GOOGLE'DAN ŞİFRE YÜKLE ============
+async function loadGooglePW(){
+    try{
+        var res=await fetch(SCRIPT_URL+"?action=getSifreler&_cb="+Date.now());
+        if(res.ok){var data=await res.json();if(Object.keys(data).length>0){googlePW=data;console.log("✅ Google PW:",Object.keys(googlePW).length);return true;}}
+    }catch(e){console.log("⚠️ Google offline");}
+    return false;
 }
 
-function doLogout() {
-    document.getElementById('loginBox').style.display = 'block';
-    document.getElementById('welcomeBox').style.display = 'none';
-    document.getElementById('userInp').value = '';
-    document.getElementById('passInp').value = '';
-    document.getElementById('msg').innerHTML = '';
-}
-</script>
+function getAllPW(){var all={};Object.assign(all,LOCAL_PW);Object.assign(all,googlePW);if(!all["Keskin"])all["Keskin"]="admin123";return all;}
 
-</body>
-</html>
+// ============ LOGIN ============
+async function doLogin(){
+    var u=document.getElementById('userInp').value.trim();
+    var p=document.getElementById('passInp').value.trim();
+    var e=document.getElementById('loginError');
+    if(!u||!p){e.innerText="❌ Bitte alles ausfüllen!";e.style.display='block';return;}
+    
+    e.innerText="⏳ Verbindung...";e.style.display='block';e.style.color='#38bdf8';
+    await loadGooglePW();
+    
+    var allPW=getAllPW();
+    if(allPW[u]&&allPW[u]===p){e.style.display='none';enterApp(u);}
+    else{e.innerText="❌ Falscher Name oder Passwort!";e.style.color='#f43f5e';}
+}
+
+function enterApp(u){
+    curUser=u;document.getElementById('loginScreen').style.display='none';
+    var d=new Date();document.getElementById('datum').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(u==="Keskin"){document.getElementById('adminPanel').style.display='block';document.getElementById('adminDisp').innerHTML='👑 Admin: '+u;loadPWList();loadDash();}
+    else{document.getElementById('mainApp').style.display='block';document.getElementById('userDisp').innerHTML='👤 '+u;var f='B';if(WORKERS.A.some(function(w){return w.includes(u)||u.includes(w.split(' ')[0]);}))f='A';if(WORKERS.C.some(function(w){return w.includes(u)||u.includes(w.split(' ')[0]);}))f='C';setS(f);}
+}
+
+// ============ ŞİFRE YÖNETİMİ ============
+function loadPWList(){
+    var allPW=getAllPW();var html='';
+    for(var u in allPW){
+        var isActive=allPW[u]!=='DEAKTIVIERT';
+        html+='<div class="toggle-row"><span style="flex:1">'+u+'</span><span style="color:#94a3b8;font-size:11px;margin-right:10px">'+(isActive?'●●●●':'⛔ GESPERRT')+'</span><div class="toggle'+(isActive?' on':'')+'" onclick="togglePW(\''+u+'\','+isActive+')"></div></div>';
+    }
+    html+='<button class="btn-d" onclick="resetAllPW()" style="width:100%;margin-top:10px">🗑️ Alle zurücksetzen</button>';
+    document.getElementById('pwList').innerHTML=html;
+}
+function togglePW(user,state){if(user==="Keskin"){alert('❌ Admin kann nicht gesperrt werden!');return;}if(state){LOCAL_PW[user]='DEAKTIVIERT';googlePW[user]='DEAKTIVIERT';}else{var def=user.toLowerCase().replace(/ /g,'')+'123';LOCAL_PW[user]=def;googlePW[user]=def;}savePW();loadPWList();}
+function resetAllPW(){if(confirm('⚠️ ALLE Passwörter zurücksetzen?')){LOCAL_PW={"Keskin":"admin123"};googlePW={};savePW();loadPWList();alert('✅ Zurückgesetzt!');}}
+
+// ============ SCHICHT ============
+function setS(s){curS=s;['A','B','C'].forEach(function(x){document.getElementById('m'+x).classList.remove('act');});document.getElementById('m'+s).classList.add('act');staff=[];renderStaff();if(s==='A')setT('Frühschicht');else if(s==='B')setT('Spätschicht');else setT('Nachtschicht');}
+function setT(t){curT=t;['tF','tS','tN'].forEach(function(x){document.getElementById(x).classList.remove('act');});if(t==='Frühschicht')document.getElementById('tF').classList.add('act');else if(t==='Spätschicht')document.getElementById('tS').classList.add('act');else document.getElementById('tN').classList.add('act');}
+
+// ============ MITARBEITER ============
+function openW(){document.getElementById('wList').innerHTML=WORKERS[curS].map(function(w){return'<div class="witem" onclick="addS(\''+w+'\')">'+w+'</div>';}).join('');document.getElementById('workerOverlay').style.display='flex';}
+function closeW(){document.getElementById('workerOverlay').style.display='none';}
+function addS(n){if(staff.indexOf(n)===-1)staff.push(n);closeW();renderStaff();}
+function addMan(){var v=document.getElementById('manW').value.trim();if(v){staff.push('✍️ '+v);document.getElementById('manW').value='';closeW();renderStaff();}}
+function remS(n){staff=staff.filter(function(x){return x!==n;});renderStaff();}
+function renderStaff(){document.getElementById('wdisp').innerHTML=staff.map(function(s){return'<span class="chip">'+s+' <span onclick="remS(\''+s+'\')">✕</span></span>';}).join('');checkF();}
+
+// ============ ANLAGE ============
+function onAn(){var v=document.getElementById('anlage').value;document.getElementById('ftBox').style.display=v.startsWith('PUR')?'block':'none';document.getElementById('comBox').style.display=v==='COM'?'block':'none';document.getElementById('artCont').innerHTML='';document.getElementById('addArtBtn').disabled=v==='';updateCom();checkF();}
+
+// ============ ARTIKEL ============
+function addArt(){var id=Date.now()+artCnt++;var an=document.getElementById('anlage').value;var cat=an==='COM'?'COM':(an.startsWith('PUR')?'PUR':'Spritz');var div=document.createElement('div');div.className='acard';div.id='a_'+id;var comF='';if(an==='COM')comF='<label>⏱️ Dauer (Min)</label><input type="number" class="adur" placeholder="Minuten" oninput="updateCom();checkF()" style="margin-bottom:6px">';div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><h4>📦 Artikel #'+artCnt+'</h4><span class="btn-d" onclick="this.closest(\'.acard\').remove();updateCom();checkF()">✕</span></div><input type="text" class="aname" placeholder="Artikelnummer" style="margin-bottom:6px">'+comF+'<div class="g2" style="margin-bottom:6px"><div><label style="margin:0;font-size:10px">✅ Gutteile</label><input type="number" class="agut" placeholder="Stk" oninput="checkF()"></div><div><label style="margin:0;font-size:10px">❌ Ausschuss Gesamt</label><input type="number" class="aaus" placeholder="Stk" oninput="checkAus(this);checkF()"></div></div><div class="raus"></div><div class="rsto"></div><div style="display:flex;gap:6px;margin-top:6px"><span class="btn-s" onclick="addRow(\''+id+'\',\'aus\',\''+cat+'\')">+ Ausschuss Grund</span><span class="btn-s" onclick="addRow(\''+id+'\',\'stoer\',\''+cat+'\')">+ Störung Grund</span></div><div class="aus-status"></div>';document.getElementById('artCont').appendChild(div);updateCom();checkF();scrollDown();}
+function addRow(aid,type,cat){var card=document.getElementById('a_'+aid);var cont=card.querySelector('.r'+type);var div=document.createElement('div');div.className='coderow';div.innerHTML='<select class="'+type+'-sel" onchange="togS(this);var c=this.closest(\'.acard\');if(c&&type===\'aus\')checkAus(c.querySelector(\'.aaus\'))">'+CODES[cat][type].map(function(c){return'<option>'+c+'</option>';}).join('')+'</select><input type="number" class="'+type+'-val" placeholder="'+(type==='aus'?'Stk':'Min')+'" oninput="if(type===\'aus\'){var c=this.closest(\'.acard\');if(c)checkAus(c.querySelector(\'.aaus\'));}updateCom();checkF()"><input type="text" class="sinp" placeholder="Grund manuell..." style="display:none;flex:2"><span onclick="this.closest(\'.coderow\').remove();updateCom();var c=this.closest(\'.acard\');if(c)checkAus(c.querySelector(\'.aaus\'));checkF()" style="color:#f43f5e;cursor:pointer;font-size:18px">✕</span>';cont.appendChild(div);scrollDown();}
+function togS(sel){var row=sel.closest('.coderow');row.querySelector('.sinp').style.display=sel.value==='Sonstige'?'block':'none';}
+function checkAus(input){if(!input)return;var card=input.closest('.acard');if(!card)return;var total=parseInt(input.value)||0;var sum=0;card.querySelectorAll('.aus-val').forEach(function(v){sum+=parseInt(v.value)||0;});var sd=card.querySelector('.aus-status');if(!sd)return;if(total===0&&sum===0){sd.innerHTML='';input.style.borderColor='#475569';}else if(total===0&&sum>0){sd.innerHTML='<span class="badge badge-warn">⚠️ Gesamt fehlt! '+sum+' Stk</span>';input.style.borderColor='#fb923c';}else if(sum===0&&total>0){sd.innerHTML='<span class="badge badge-warn">⚠️ Keine Details! '+total+' Stk</span>';input.style.borderColor='#fb923c';}else if(sum!==total){sd.innerHTML='<span class="badge badge-err">❌ '+sum+'/'+total+' Stk</span>';input.style.borderColor='#f43f5e';}else{sd.innerHTML='<span class="badge badge-ok">✅ OK: '+total+' Stk</span>';input.style.borderColor='#4ade80';}}
+function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM')return;var total=0;document.querySelectorAll('.adur').forEach(function(v){total+=parseInt(v.value)||0;});document.getElementById('comTot').innerText=total;var pct=Math.min((total/480)*100,100);document.getElementById('comBar').style.width=pct+'%';var warn=document.getElementById('comWarn');if(total>480){warn.innerText='⚠️ '+(total-480)+' Min ÜBERSCHRITTEN!';warn.style.color='#f43f5e';document.getElementById('comBar').style.background='#f43f5e';}else if(total===480){warn.innerText='✅ Genau 480 Min!';warn.style.color='#4ade80';document.getElementById('comBar').style.background='#4ade80';}else{warn.innerText='Noch '+(480-total)+' Min';warn.style.color='#38bdf8';document.getElementById('comBar').style.background='#38bdf8';}}
+function checkF(){var btn=document.getElementById('sendBtn');if(!btn)return;btn.disabled=!(staff.length>0&&document.getElementById('anlage').value!==''&&document.querySelectorAll('.acard').length>0);}
+function scrollDown(){setTimeout(function(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});},150);}
+
+// ============ GOOGLE SHEETS'E GÖNDER ============
+function send(){
+    var an=document.getElementById('anlage').value;
+    var da=document.getElementById('datum').value;
+    var fts=[];document.querySelectorAll('.ftb.
