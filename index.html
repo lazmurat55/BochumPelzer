@@ -1,7 +1,160 @@
-<script>
-// ⚠️ DEINE GOOGLE SHEETS DEPLOYMENT URL
-const scriptURL = "https://script.google.com/macros/s/AKfycbxDHeucoqh5TunlEtPIaBD_hpyan6GLPihYJwmzumEEHvT_5GGm4t-gA0TwD7bjwo0jUA/exec";
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schichtbericht & Dashboard</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --danger: #e04b4b;
+            --success: #2ecc71;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-muted: #777777;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; }
+        .section-card { background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-top: 10px; margin-bottom: 5px; }
+        input, select, button { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #cccccc; border-radius: 6px; font-size: 16px; margin-bottom: 10px; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:disabled { background: #cccccc; cursor: not-allowed; }
+        button.sub-btn { background: #f0f4f8; color: var(--text); border: 1px solid #d0dbe5; margin-top: 5px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .status-badge { padding: 8px; border-radius: 5px; font-size: 14px; font-weight: bold; margin-top: 5px; text-align: center; }
+        .status-ok { background: #e8f8f0; color: #27ae60; }
+        .worker-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:100; }
+        .overlay-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .worker-opt { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .worker-opt:hover { background: #f0f4f8; }
+        .selected-worker { display: inline-flex; align-items: center; gap: 8px; background: #e1ecf4; color: #39739d; padding: 6px 12px; border-radius: 20px; margin: 5px; font-size: 14px; }
+        .report-box { background: white; border-left: 5px solid var(--primary); padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; position: relative; }
+        .badge-origin { position: absolute; right: 15px; top: 15px; background: #e1ecf4; color: #39739d; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .report-date { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .report-artikel { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .report-ausschuss { color: var(--danger); font-weight: bold; margin-bottom: 5px; }
+        .report-störung { background: #fff5f5; padding: 8px; border-radius: 4px; font-size: 14px; margin-bottom: 5px; }
+        .report-workers { font-size: 13px; color: #555; }
+        .filter-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .filter-btn { background: #e0e0e0; color: #333; }
+        .filter-btn.active-filter { background: var(--primary); color: white; }
+        .schicht-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .schicht-btn { background: #e0e0e0; color: #333; flex: 1; }
+        .schicht-btn.active { background: #333; color: white; }
+    </style>
+</head>
+<body>
 
+<script>
+    // 👇 ADIM 1'DEKİ KOPYALADIĞIN YENİ URL'Yİ BURADAKİ TIRNAKLARIN İÇİNE YAPIŞTIR!
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwrsFqWAd-JqV3AHHpr2DZKF0cyAjSK5g0gUGvnBVgzwsnz4Hu4tLTqHm9QRICPGeM2cw/exec";
+</script>
+
+<div class="container">
+    <div id="loginScreen" class="section-card">
+        <h2>🔐 APG Login</h2>
+        <label>Benutzername</label>
+        <input type="text" id="userInp" placeholder="Dein Name">
+        <label>Passwort</label>
+        <input type="password" id="passInp" placeholder="Deine PIN">
+        <button onclick="checkLogin()">Anmelden</button>
+        <div id="loginError" style="color:var(--danger); display:none; margin-top:10px; font-weight:bold;"></div>
+    </div>
+
+    <div id="mainApp" class="section-card" style="display:none;">
+        <div id="currentUserDisplay" style="font-weight:bold; margin-bottom:15px; color:var(--primary);"></div>
+        
+        <label>📅 Datum</label>
+        <input type="date" id="datum">
+
+        <label>⏱️ Schicht & Schichtart</label>
+        <div class="schicht-group">
+            <button class="schicht-btn" id="mSchichtA" onclick="setSchicht('A')">Schicht A</button>
+            <button class="schicht-btn" id="mSchichtB" onclick="setSchicht('B')">Schicht B</button>
+            <button class="schicht-btn" id="mSchichtC" onclick="setSchicht('C')">Schicht C</button>
+        </div>
+        <div class="schicht-group">
+            <button class="schicht-btn type-btn" id="tFrueh" onclick="setSchichtType('Frühschicht')">Früh</button>
+            <button class="schicht-btn type-btn" id="tSpaet" onclick="setSchichtType('Spätschicht')">Spät</button>
+            <button class="schicht-btn type-btn" id="tNacht" onclick="setSchichtType('Nacht')">Nacht</button>
+        </div>
+
+        <label>👥 Team-Mitarbeiter</label>
+        <button class="sub-btn" type="button" onclick="openWorkerOverlay()">+ Mitarbeiter hinzufügen</button>
+        <div id="workerDisplayContainer" style="margin-top:10px;"></div>
+
+        <label>🏭 Anlage wählen</label>
+        <select id="anlage" onchange="onAnlageChange(this.value)">
+            <option value="">-- Bitte wählen --</option>
+            <option value="PUR1">PUR 1</option>
+            <option value="PUR2">PUR 2</option>
+            <option value="IM1">IM 1</option>
+            <option value="IM2">IM 2</option>
+            <option value="COM">Compoundierung</option>
+        </select>
+
+        <div id="ftBox" style="display:none;">
+            <label>🖼️ Formträger (Mehrfachauswahl möglich)</label>
+            <div style="display:flex; gap:5px; margin-bottom:15px;">
+                <button type="button" class="schicht-btn ft-btn" onclick="this.classList.toggle('active'); liveCheck();">FT1</button>
+                <button type="button" class="schicht-btn ft-btn" onclick="this.classList.toggle('active'); liveCheck();">FT2</button>
+                <button type="button" class="schicht-btn ft-btn" onclick="this.classList.toggle('active'); liveCheck();">FT3</button>
+                <button type="button" class="schicht-btn ft-btn" onclick="this.classList.toggle('active'); liveCheck();">FT4</button>
+            </div>
+        </div>
+
+        <div id="artikelContainer"></div>
+        <button id="addArtikelBtn" class="sub-btn" type="button" onclick="addArtikel()" disabled>+ Artikel hinzufügen</button>
+
+        <div id="comTimeBox" style="display:none; font-weight:bold; margin:10px 0;">
+            Gesamtdauer Compoundierung: <span id="comTotal">0</span> Min
+        </div>
+
+        <button id="mainSendBtn" style="margin-top:20px; background:var(--success);" onclick="processReport()" disabled>🚀 SPEICHERN & SENDEN</button>
+    </div>
+
+    <div id="adminPanel" class="section-card" style="display:none;">
+        <div id="adminUserDisplay" style="font-weight:bold; margin-bottom:15px; color:var(--primary);"></div>
+        
+        <div id="rightsManagementBox" style="display:none; flex-direction:column; background:#f0f4f8; padding:15px; border-radius:8px; margin-bottom:20px;">
+            <h4>🔑 Schichtleiter-Rechte vergeben</h4>
+            <select id="rightsSelect" onchange="handleRightsSelectChange(this.value)"></select>
+            <select id="assignedSchichtSelect">
+                <option value="A">Schicht A</option>
+                <option value="B">Schicht B</option>
+                <option value="C">Schicht C</option>
+            </select>
+            <button onclick="grantSchichtleiterRights()">Rechte zuweisen</button>
+            <div id="currentManagersList" style="font-size:13px; margin-top:10px; color:#555;"></div>
+        </div>
+
+        <h3>📊 Live-Dashboard (Echtzeit-Meldungen)</h3>
+        <div class="filter-group" id="adminFilterGroup">
+            <button class="filter-btn" id="fltA" onclick="filterSchicht('A')">A_Schicht</button>
+            <button class="filter-btn" id="fltB" onclick="filterSchicht('B')">B_Schicht</button>
+            <button class="filter-btn" id="fltC" onclick="filterSchicht('C')">C_Schicht</button>
+        </div>
+
+        <div id="reportsContainer"></div>
+    </div>
+</div>
+
+<div class="worker-overlay" id="workerOverlay">
+    <div class="overlay-content">
+        <h3>Mitarbeiter auswählen</h3>
+        <div id="workerList"></div>
+        <hr>
+        <label>Manueller Eintrag (Nicht in Liste)</label>
+        <input type="text" id="manualWorker" placeholder="Name, Vorname">
+        <button class="sub-btn" type="button" onclick="addManualWorker()">Hinzufügen</button>
+        <button onclick="closeOverlay()" style="background:var(--danger); margin-top:10px;">Schließen</button>
+    </div>
+</div>
+
+<script>
 let currentSchicht = "B";
 let currentSchichtType = "Spätschicht";
 let selectedStaff = [];
@@ -11,7 +164,6 @@ let superAdmin = "Keskin";
 let schichtLeiterDb = {};
 let activeFilterSchicht = "B"; 
 
-// Lokale Speicherung der Schichtleiter-Rechte laden
 if(localStorage.getItem('apg_schichtleiter_db')) {
     try { schichtLeiterDb = JSON.parse(localStorage.getItem('apg_schichtleiter_db')); } catch(e){}
 }
@@ -24,14 +176,12 @@ function setInitialTodayDate() {
     }
 }
 
-// Stammdaten der Belegschaft für das Schicht-Reporting
 const workerData = {
     "A": ["Kunert M.", "Karali O.", "Mikuczynski K.", "Türkmen E.", "Amrouch M.", "Stania D.", "Kantaroglu A.", "Krancioch A.", "Held D.", "Berisha I.", "Neji M.", "Mulugeta G.", "Udezue P.", "Jansen M.", "Aksoy O.", "Yildirim S.", "Brand N.", "Louze A.", "Blanquez Romero V.", "Diallo M.D.", "Sener E.", "Klomrit", "Garcia"],
     "B": ["Keskin Mur.", "Aldirmaz P.", "Anderwald R.", "Bayrakli F.", "Kilic D.", "Maafi T.", "Besche T.", "Eickhoff P.", "Toth Renata", "Gibba n.", "Helf A.", "Isbir J.", "Jeyakumar S.", "Kalisch T.", "Kowarsch R.", "Nowak M.", "Pähler D.", "Patarcsity V.", "Pulendran K.", "Sahin E.", "Savas S.", "Schiavitelli", "Uluyüz B.", "Uzun S.", "Klomrit", "Garcia"],
     "C": ["Beher T.", "Keskin Mustafa", "Kantaroglu Ö.", "Savas R.", "Rafo S.", "Gertz Kevin", "Gertz S.", "Schönborn Ch.", "Fortes Ch.", "Sakaguchi M.", "Mercan M.", "Krämer Ch.", "Juretzka T.", "Kumbara E.", "Skupio D.", "Skrago T.", "Bah A.", "Kaya A.", "Jdea A.", "Toure A.", "Schneider D.", "Tchaleu Bertrand", "Keskinmus", "Klomrit", "Garcia"]
 };
 
-// Fehlerkatalog (Ausschuss & Störungen) nach Anlagen-Kategorie
 const codeData = {
     PUR: {
         aus: ["6-2-01 Temperatur zu niedrig", "6-2-02 Schaum haftet nicht am Bauteil", "6-2-03 Einlegefehler", "6-2-04 Schussabbruch", "6-2-05 CIM nicht voll ausgeschäumt", "6-2-06 Lippe gerissen", "6-2-07 CIM gerissen", "7-2-01 Nacharbeit am Bauteil (Entgraten, Nachkleben etc.)", "Sonstige"],
@@ -47,7 +197,6 @@ const codeData = {
     }
 };
 
-// Passwörter live aus Google Sheet ziehen
 async function loadPasswordsFromSheet() {
     try {
         const response = await fetch(`${scriptURL}?action=getSifreler&_cb=${Date.now()}`);
@@ -59,7 +208,6 @@ async function loadPasswordsFromSheet() {
     }
 }
 
-// Login-Prüfung
 async function checkLogin() {
     const u = document.getElementById('userInp').value.trim();
     const p = document.getElementById('passInp').value.trim();
@@ -84,7 +232,6 @@ async function checkLogin() {
     }
 }
 
-// App-Steuerung nach erfolgreichem Login
 function enterApp(u, tokenDb = {}) { 
     loggedInUser = u; 
     document.getElementById('loginScreen').style.display = 'none'; 
@@ -125,29 +272,12 @@ function enterApp(u, tokenDb = {}) {
     }
 }
 
-// Automatischer Dashboard-Wechsel während des Schichtwechsels
 function startAutoRefresh() {
     if(autoRefreshInterval) clearInterval(autoRefreshInterval);
     autoRefreshInterval = setInterval(() => {
-        const now = new Date();
-        const hrs = now.getHours();
-        const mins = now.getMinutes();
-        const currentTimeNum = (hrs * 100) + mins;
-        
-        const isVardiya1 = (currentTimeNum >= 1330 && currentTimeNum <= 1400); 
-        const isVardiya2 = (currentTimeNum >= 2130 && currentTimeNum <= 2210); 
-        const isVardiya3 = (currentTimeNum >= 530  && currentTimeNum <= 610);  
-
-        if (isVardiya1 || isVardiya2 || isVardiya3) {
-            if (!window.lastRefreshTime || (now - window.lastRefreshTime >= 90000)) {
-                window.lastRefreshTime = now;
-                loadAdminDashboard(); 
-            }
-        }
-    }, 10000); 
+        loadAdminDashboard();
+    }, 30000); 
 }
-
-function saveNewPassword() { alert("Passwort geändert"); enterApp(loggedInUser); }
 
 function loadUserSelect(tokenDb) {
     const select = document.getElementById('rightsSelect');
@@ -186,7 +316,7 @@ function grantSchichtleiterRights() {
 }
 
 function removeSchichtleiterRight(name) {
-    if (confirm(`Möchten Sie die Berechtigung for ${name} wirklich löschen?`)) {
+    if (confirm(`Möchten Sie die Berechtigung für ${name} wirklich löschen?`)) {
         delete schichtLeiterDb[name];
         localStorage.setItem('apg_schichtleiter_db', JSON.stringify(schichtLeiterDb));
         updateManagersList();
@@ -276,7 +406,6 @@ function addRow(artId, type) {
     const cat = anl==='COM'?'COM':(anl.startsWith("PUR")?'PUR':'Spritz');
     const div = document.createElement('div'); div.className="code-row";
     
-    // Sabit klas etiketleri (Örn: aus-select veya stoer-select)
     div.innerHTML = `<div class="code-row-inputs" style="display:flex; gap:5px; margin-top:5px;">
         <select class="${type}-select" style="flex:3;">
             ${codeData[cat][type].map(c => `<option value="${c}">${c}</option>`).join("")}
@@ -292,7 +421,6 @@ function addRow(artId, type) {
     liveCheck();
 }
 
-// Güvenli ve Çökmeyen Canlı Kontrol (Live-Check)
 function liveCheck() {
     let isValid = true; 
     let cT = 0;
@@ -346,11 +474,9 @@ function liveCheck() {
         comTotalContainer.innerText = cT;
     }
     
-    // Gönderim Butonu Aktivasyon Şartı
     sendBtn.disabled = !(hasWorkers && hasAnlage && hasRows && isValid);
 }
 
-// 🚀 DATEN VERARBEITEN & AN GOOGLE SHEETS SENDEN
 async function processReport() {
     const sendBtn = document.getElementById('mainSendBtn');
     if (!sendBtn) return;
@@ -438,7 +564,6 @@ async function processReport() {
     }
 }
 
-// 📊 DASHBOARD LOGIK (FILTERN & RENDER)
 function filterSchicht(s) {
     activeFilterSchicht = s;
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active-filter'));
@@ -463,7 +588,7 @@ async function loadAdminDashboard() {
         container.innerHTML = reports.map(r => `
             <div class="report-box">
                 <span class="badge-origin">${r.anlage} ${r.formtraeger ? '- ' + r.formtraeger : ''}</span>
-                <div class="report-date">📅 ${r.datum} | ⏳ ${r.schichtType || ''} (${r.schicht}_Schicht)</div>
+                <div class="report-date">📅 ${r.datum}</div>
                 <div class="report-artikel">📦 Artikel: ${r.artikelName}</div>
                 <div class="report-ausschuss">✅ Gut: ${r.gutteile} Stk | ❌ Ausschuss: ${r.ausschussGesamt} Stk</div>
                 <div class="report-störung">📝 Details: ${r.details}</div>
@@ -478,3 +603,5 @@ async function loadAdminDashboard() {
     }
 }
 </script>
+</body>
+</html>
