@@ -179,7 +179,62 @@
 <script>
 // ⚡ SENIN SCRIPT URL'IN
 const scriptURL = "https://script.google.com/macros/s/AKfycbyZrtn1gIAacF3w659U3DSOump2-81pzTDoOO8hYQfplwrI4DdybpxUXhGYwssE0Dwqfg/exec";
+// ⚡ YEDEK ŞİFRELER (Google çalışmazsa bunu kullanır)
+const YEDEK_SIFRELER = {
+    "Keskin": "admin123",
+    "Test": "test123",
+    "Keskin Mur.": "murat123",
+    "Keskin Mustafa": "musti123"
+};
 
+// LOGIN FONKSİYONUNU BUNUNLA DEĞİŞTİR:
+async function checkLogin() {
+    const u = document.getElementById('userInp').value.trim();
+    const p = document.getElementById('passInp').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    
+    if(!u || !p) {
+        errorDiv.innerText = "❌ Bitte Name und Passwort eingeben!";
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // ÖNCE YEDEK ŞİFRELERİ DENE
+    if(YEDEK_SIFRELER[u] && YEDEK_SIFRELER[u] === p) {
+        console.log("✅ Yedek şifre ile giriş yapıldı:", u);
+        errorDiv.style.display = 'none';
+        enterApp(u);
+        return;
+    }
+    
+    // YEDEKTE YOKSA GOOGLE'A SOR
+    errorDiv.innerText = "⏳ Server wird kontaktiert...";
+    errorDiv.style.display = 'block';
+    errorDiv.style.color = 'var(--primary)';
+    
+    try {
+        const response = await fetch(`${scriptURL}?action=getSifreler&_cb=${Date.now()}`);
+        
+        if (!response.ok) {
+            throw new Error("Server antwortet nicht: " + response.status);
+        }
+        
+        const sifreler = await response.json();
+        console.log("✅ Google'dan şifreler alındı:", Object.keys(sifreler).length + " kullanıcı");
+        
+        if(sifreler[u] && sifreler[u] === p) {
+            errorDiv.style.display = 'none';
+            enterApp(u);
+        } else {
+            errorDiv.innerText = "❌ Falscher Benutzername oder Passwort!";
+            errorDiv.style.color = 'var(--danger)';
+        }
+    } catch(e) {
+        console.error("❌ Google bağlantı hatası:", e);
+        errorDiv.innerText = "⚠️ Keine Verbindung zum Server!\n\nYedek şifreleri deneyin:\nTest / test123";
+        errorDiv.style.color = 'var(--warning)';
+    }
+}
 let currentSchicht = "B";
 let currentSchichtType = "Spätschicht";
 let selectedStaff = [];
