@@ -13,6 +13,7 @@
         #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;justify-content:center;align-items:center;z-index:999}
         .login-card{background:#1e293b;padding:30px;border-radius:20px;border:2px solid #38bdf8;width:400px;text-align:center}
         h2{color:#38bdf8}
+        h3{color:#38bdf8;margin:0 0 10px 0}
         input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #475569;background:#334155;color:#fff;font-size:14px;box-sizing:border-box}
         button{padding:12px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:14px;width:100%;margin-top:10px}
         .btn-p{background:#38bdf8;color:#0f172a}
@@ -20,6 +21,7 @@
         .btn-o{background:transparent;border:2px dashed #38bdf8;color:#38bdf8;margin-top:8px}
         .btn-s{background:#0284c7;color:#fff;padding:6px 12px;font-size:12px;width:auto}
         .btn-d{background:#f43f5e;color:#fff;padding:6px 12px;font-size:12px;width:auto}
+        .btn-g{background:#4ade80;color:#0f172a;padding:6px 12px;font-size:12px;width:auto}
         #mainApp,#adminPanel{max-width:750px;background:#1e293b;padding:20px;border-radius:20px;margin:auto;border:1px solid #475569;display:none}
         #adminPanel{max-width:1100px}
         .header{text-align:center;border-bottom:3px solid #38bdf8;padding-bottom:10px;margin-bottom:15px}
@@ -55,6 +57,9 @@
         .ban{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#38bdf8;color:#0f172a;margin-bottom:6px}
         .fbtn{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;color:#fff;font-weight:bold;font-size:13px;cursor:pointer}
         .fbtn.act{background:#0284c7;border-color:#38bdf8}
+        .manager-box{background:rgba(56,189,248,0.08);border:1px solid #475569;padding:15px;border-radius:12px;margin-bottom:15px;text-align:left}
+        .manager-row{display:flex;justify-content:space-between;align-items:center;padding:8px;background:#334155;border-radius:8px;margin:5px 0;font-size:13px}
+        .manager-row span{color:#f43f5e;cursor:pointer;font-weight:bold;font-size:16px}
     </style>
 </head>
 <body>
@@ -67,7 +72,6 @@
         <input type="password" id="passInp" placeholder="Passwort">
         <button class="btn-p" onclick="doLogin()">ANMELDEN</button>
         <p id="loginError" class="err"></p>
-        <p class="info">Test: Test / test123 | Admin: Keskin / admin123</p>
     </div>
 </div>
 
@@ -95,7 +99,24 @@
     <div class="header">
         <h2>📊 Admin Dashboard</h2>
         <p id="adminDisp" style="color:#38bdf8;font-weight:bold;margin-top:3px"></p>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto">
+        
+        <!-- SCHICHTLEITER ATAMA -->
+        <div id="managerBox" class="manager-box" style="display:none">
+            <h3>🔐 Schichtleiter Zuweisung</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <select id="managerSelect" style="flex:2;min-width:180px"></select>
+                <select id="managerSchicht" style="flex:1;min-width:60px">
+                    <option value="A">A</option>
+                    <option value="B" selected>B</option>
+                    <option value="C">C</option>
+                </select>
+                <button class="btn-g" onclick="addManager()">➕ Zuweisen</button>
+            </div>
+            <div id="managerList" style="margin-top:10px;font-size:12px;color:#94a3b8"></div>
+        </div>
+        
+        <!-- FILTRE -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto" id="filterGroup">
             <button class="fbtn" id="fA" onclick="filt('A')">🔵 A</button>
             <button class="fbtn act" id="fB" onclick="filt('B')">🟢 B</button>
             <button class="fbtn" id="fC" onclick="filt('C')">🟠 C</button>
@@ -111,6 +132,11 @@
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz9yjitkqV8gS5xPfEpX1TjqCGMGb5necgLZ1E6OjFoIeFgHejG2cMiP8nH9WDe3dnQTw/exec";
 var PW = {"Keskin":"admin123","Test":"test123","Keskin Mur.":"murat123","Keskin Mustafa":"musti123"};
 var curUser="",curS="B",curT="Spätschicht",staff=[],artCnt=0,filtS="B";
+var schichtLeiter = {}; // Schichtleiter verileri
+
+// LocalStorage'dan yükle
+try{var saved=localStorage.getItem('apg_manager');if(saved)schichtLeiter=JSON.parse(saved);}catch(e){}
+function saveManager(){localStorage.setItem('apg_manager',JSON.stringify(schichtLeiter));}
 
 var WORKERS={A:["Kunert M.","Karali O.","Mikuczynski K.","Türkmen E.","Amrouch M.","Stania D.","Kantaroglu A.","Krancioch A.","Held D.","Berisha I.","Neji M.","Mulugeta G.","Udezue P.","Jansen M.","Aksoy O.","Yildirim S.","Brand N.","Louze A.","Blanquez Romero V.","Diallo M.D.","Sener E.","Klomrit","Garcia"],B:["Keskin Mur.","Aldirmaz P.","Anderwald R.","Bayrakli F.","Kilic D.","Maafi T.","Besche T.","Eickhoff P.","Toth Renata","Gibba n.","Helf A.","Isbir J.","Jeyakumar S.","Kalisch T.","Kowarsch R.","Nowak M.","Pähler D.","Patarcsity V.","Pulendran K.","Sahin E.","Savas S.","Schiavitelli","Uluyüz B.","Uzun S.","Klomrit","Garcia"],C:["Beher T.","Keskin Mustafa","Kantaroglu Ö.","Savas R.","Rafo S.","Gertz Kevin","Gertz S.","Schönborn Ch.","Fortes Ch.","Sakaguchi M.","Mercan M.","Krämer Ch.","Juretzka T.","Kumbara E.","Skupio D.","Skrago T.","Bah A.","Kaya A.","Jdea A.","Toure A.","Schneider D.","Tchaleu Bertrand","Keskinmus","Klomrit","Garcia"]};
 var CODES={PUR:{aus:["6-2-01 Temperatur zu niedrig","6-2-02 Schaum haftet nicht","6-2-03 Einlegefehler","6-2-04 Schussabbruch","6-2-05 CIM nicht voll","6-2-06 Lippe gerissen","6-2-07 CIM gerissen","7-2-01 Nacharbeit","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-2-01 Ungepl. Inst. WZ","4-2-02 Ungepl. Inst. Masch","4-2-03 Poly/Iso Überdruck","4-2-04 Mischkopf nio","4-2-05 Fehler Lichtschr.","4-2-06 Trennmittelpist.","4-2-07 Formträger Prob.","4-2-08 Reinigung WZ","4-2-09 Not Aus","5-2-01 Logistik Mangel","5-2-02 Keine Teile","5-2-04 Wartezeit Einrichter","5-2-10 Poly/Iso leer","Sonstige"]},Spritz:{aus:["6-1-01 Anfahrschrott","6-1-02 Mat-Umst.","6-1-03 CIM n.voll","6-1-04 CIM gerissen","6-1-06 Einfallstellen","6-1-07 Brandstellen","6-1-08 Silberstreifen","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-1-01 Ungepl. Inst. WZ","4-1-02 Ungepl. Inst. Masch","4-1-03 Mat-Förderung","4-1-04 Dosierprobleme","4-1-05 Schließeinheit","4-1-06 Teileentnahme","4-1-07 WZ-Heizung","4-1-08 Beflammung","5-1-01 Mat-Mangel","5-1-03 Wartezeit Einrichter","Sonstige"]},COM:{aus:["6-3-01 Anfahrschrott","6-3-02 Mat-Fehler","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-3-01 Messer schleifen","4-3-02 Ungepl. Inst. Masch","4-3-04 Silowechsel","5-3-01 Mat-Mangel","5-3-05 Feueralarm","Sonstige"]}};
@@ -121,11 +147,28 @@ function doLogin(){var u=document.getElementById('userInp').value.trim();var p=d
 function enterApp(u){
     curUser=u;document.getElementById('loginScreen').style.display='none';
     var d=new Date();document.getElementById('datum').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    
     if(u==="Keskin"){
+        // ADMIN
         document.getElementById('adminPanel').style.display='block';
-        document.getElementById('adminDisp').innerHTML='👑 Admin: '+u;
-        loadDash();
+        document.getElementById('adminDisp').innerHTML='👑 Haupt-Admin: '+u;
+        document.getElementById('managerBox').style.display='block';
+        document.getElementById('filterGroup').style.display='grid';
+        loadManagerSelect();
+        loadManagerList();
+        filt('B');
+    }else if(schichtLeiter[u]){
+        // SCHICHTLEITER - sadece kendi vardiyasını görür
+        var s=schichtLeiter[u];
+        document.getElementById('adminPanel').style.display='block';
+        document.getElementById('adminDisp').innerHTML='🏃 Schichtleiter: '+u+' (Schicht '+s+')';
+        document.getElementById('managerBox').style.display='none';
+        // Sadece kendi vardiya butonunu göster
+        document.querySelectorAll('#filterGroup .fbtn').forEach(function(b){b.style.display='none';});
+        document.getElementById('f'+s).style.display='block';
+        filt(s);
     }else{
+        // NORMAL ÇALIŞAN
         document.getElementById('mainApp').style.display='block';
         document.getElementById('userDisp').innerHTML='👤 '+u;
         var f='B';
@@ -133,6 +176,40 @@ function enterApp(u){
         if(WORKERS.C.some(function(w){return w.includes(u)||u.includes(w.split(' ')[0]);}))f='C';
         setS(f);
     }
+}
+
+// ============ SCHICHTLEITER YÖNETİMİ ============
+function loadManagerSelect(){
+    var sel=document.getElementById('managerSelect');
+    var all=[];
+    Object.values(WORKERS).forEach(function(a){a.forEach(function(w){if(all.indexOf(w)===-1&&w!=="Keskin")all.push(w);});});
+    all.sort();
+    sel.innerHTML='<option value="">Mitarbeiter wählen...</option>'+all.map(function(w){return'<option value="'+w+'">'+w+'</option>';}).join('');
+}
+
+function addManager(){
+    var n=document.getElementById('managerSelect').value;
+    var s=document.getElementById('managerSchicht').value;
+    if(!n){alert('❌ Bitte Mitarbeiter wählen!');return;}
+    schichtLeiter[n]=s;
+    saveManager();
+    loadManagerList();
+    alert('✅ '+n+' ist jetzt Schichtleiter für Schicht '+s);
+}
+
+function removeManager(n){
+    if(confirm('⚠️ '+n+' als Schichtleiter entfernen?')){
+        delete schichtLeiter[n];
+        saveManager();
+        loadManagerList();
+    }
+}
+
+function loadManagerList(){
+    var div=document.getElementById('managerList');
+    var entries=Object.entries(schichtLeiter);
+    if(entries.length===0){div.innerHTML='Keine Schichtleiter zugewiesen.';return;}
+    div.innerHTML=entries.map(function(e){return'<div class="manager-row"><span>'+e[0]+' → Schicht '+e[1]+'</span><span onclick="removeManager(\''+e[0]+'\')" title="Entfernen">✕</span></div>';}).join('');
 }
 
 // ============ SCHICHT ============
@@ -155,7 +232,7 @@ function addArt(){var id=Date.now()+artCnt++;var an=document.getElementById('anl
 function addRow(aid,type,cat){var card=document.getElementById('a_'+aid);var cont=card.querySelector('.r'+type);var div=document.createElement('div');div.className='coderow';div.innerHTML='<select class="'+type+'-sel" onchange="togS(this)">'+CODES[cat][type].map(function(c){return'<option>'+c+'</option>';}).join('')+'</select><input type="number" class="'+type+'-val" placeholder="'+(type==='aus'?'Stk':'Min')+'" oninput="if(type===\'aus\')checkAus(this.closest(\'.acard\').querySelector(\'.aaus\'));updateCom();checkF()"><input type="text" class="sinp" placeholder="Grund manuell..." style="display:none;flex:2"><span onclick="this.closest(\'.coderow\').remove();updateCom();checkF()" style="color:#f43f5e;cursor:pointer;font-size:18px">✕</span>';cont.appendChild(div);}
 function togS(sel){sel.closest('.coderow').querySelector('.sinp').style.display=sel.value==='Sonstige'?'block':'none';}
 function checkAus(input){if(!input)return;var card=input.closest('.acard');if(!card)return;var total=parseInt(input.value)||0;var sum=0;card.querySelectorAll('.aus-val').forEach(function(v){sum+=parseInt(v.value)||0;});var sd=card.querySelector('.aus-status');if(!sd)return;if(total===0&&sum===0){sd.innerHTML='';}else if(total===0&&sum>0){sd.innerHTML='<span class="badge badge-warn">⚠️ Gesamt fehlt! '+sum+' Stk</span>';}else if(sum!==total){sd.innerHTML='<span class="badge badge-err">❌ '+sum+'/'+total+' Stk</span>';}else{sd.innerHTML='<span class="badge badge-ok">✅ OK: '+total+' Stk</span>';}}
-function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM')return;var total=0;document.querySelectorAll('.adur').forEach(function(v){total+=parseInt(v.value)||0;});document.getElementById('comTot').innerText=total;var pct=Math.min((total/480)*100,100);document.getElementById('comBar').style.width=pct+'%';}
+function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM')return;var total=0;document.querySelectorAll('.adur').forEach(function(v){total+=parseInt(v.value)||0;});document.getElementById('comTot').innerText=total;var pct=Math.min((total/480)*100,100);document.getElementById('comBar').style.width=pct+'%';var warn=document.getElementById('comWarn');if(total>480){warn.innerText='⚠️ '+(total-480)+' Min ÜBERSCHRITTEN!';warn.style.color='#f43f5e';}else if(total===480){warn.innerText='✅ Genau 480 Min!';warn.style.color='#4ade80';}else{warn.innerText='Noch '+(480-total)+' Min';warn.style.color='#38bdf8';}}
 function checkF(){var btn=document.getElementById('sendBtn');if(!btn)return;btn.disabled=!(staff.length>0&&document.getElementById('anlage').value!==''&&document.querySelectorAll('.acard').length>0);}
 
 // ============ GOOGLE SHEETS'E GÖNDER ============
@@ -176,40 +253,4 @@ function send(){
         card.querySelectorAll('.stoer-sel').forEach(function(s,i){var v=card.querySelectorAll('.stoer-val')[i];if(v&&v.value){var txt=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;stoerDetails.push(txt+' ('+v.value+' Min)');}});
         data.rows.push({artikelNummer:aname,dauer:adur,gutteile:agut,ausschussGesamt:aaus,ausschussDetails:ausDetails.join(" | ")||'Keine',stoerungDetails:stoerDetails.join(" | ")||'Keine'});
     });
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)})
-    .then(function(r){return r.json();})
-    .then(function(result){
-        if(result.status==='success'){alert('✅ ERFOLGREICH!\n\nSchicht '+data.schicht+' gespeichert!');document.getElementById('artCont').innerHTML='';staff=[];renderStaff();document.getElementById('anlage').value='';onAn();}
-        else{alert('❌ Fehler: '+(result.message||'Unbekannt'));}
-    })
-    .catch(function(e){alert('❌ Verbindungsfehler!\n\n'+e.message);})
-    .finally(function(){btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';checkF();});
-}
-
-// ============ DASHBOARD ============
-function loadDash(){
-    var c=document.getElementById('repCont');
-    c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">⏳ Laden...</p>';
-    fetch(SCRIPT_URL+'?action=getReports&schicht='+filtS)
-    .then(function(r){return r.json();})
-    .then(function(d){
-        if(!d||d.length===0){c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">📭 Keine Daten für Schicht '+filtS+'</p>';return;}
-        c.innerHTML='';
-        d.forEach(function(r){
-            var b=document.createElement('div');b.className='rbox';
-            b.innerHTML='<span class="ban">'+r.anlage+'</span><div style="font-size:12px;color:#e2e8f0;margin-bottom:4px">📅 '+r.datum+' | '+r.schichtType+'</div><div style="font-size:14px;font-weight:bold;color:#fff">📦 '+r.artikelNummer+'</div><div style="font-size:13px;color:#facc15;font-weight:bold">✅ Gut: '+r.gutteile+' | ❌ Aus: '+r.ausschussGesamt+'</div><div style="font-size:12px;color:#94a3b8;margin-top:5px">⚠️ '+r.ausschussDetails+'</div><div style="font-size:13px;margin-top:8px;border-top:1px solid #475569;padding-top:8px;color:#fff;font-weight:bold">👥 '+r.mitarbeiter+'</div>';
-            c.appendChild(b);
-        });
-    })
-    .catch(function(e){c.innerHTML='<p style="text-align:center;color:#f43f5e;grid-column:1/-1">❌ '+e.message+'</p>';});
-}
-
-function filt(s){
-    filtS=s;
-    ['A','B','C'].forEach(function(x){document.getElementById('f'+x).classList.remove('act');});
-    document.getElementById('f'+s).classList.add('act');
-    loadDash();
-}
-</script>
-</body>
-</html>
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON
