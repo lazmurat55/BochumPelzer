@@ -1,215 +1,458 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APG BOCHUM</title>
-    <link rel="apple-touch-icon" href="https://www.adlerpelzer.com/wp-content/uploads/2021/09/cropped-APG-Favicon-192x192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0f172a">
-    <style>
-        body{background:#0f172a;color:#fff;font-family:Arial;padding:10px;min-height:100vh;padding-bottom:50px}
-        #loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;justify-content:center;align-items:center;z-index:999}
-        .login-card{background:#1e293b;padding:30px;border-radius:20px;border:2px solid #38bdf8;width:400px;text-align:center}
-        h2,h3{color:#38bdf8}
-        input,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #475569;background:#334155;color:#fff;font-size:14px;box-sizing:border-box}
-        button{padding:12px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;font-size:14px;width:100%;margin-top:10px}
-        .btn-p{background:#38bdf8;color:#0f172a}
-        .btn-p:disabled{background:#475569;color:#94a3b8}
-        .btn-o{background:transparent;border:2px dashed #38bdf8;color:#38bdf8;margin-top:8px}
-        .btn-s{background:#0284c7;color:#fff;padding:6px 12px;font-size:12px;width:auto}
-        .btn-d{background:#f43f5e;color:#fff;padding:6px 12px;font-size:12px;width:auto}
-        .btn-g{background:#4ade80;color:#0f172a;padding:6px 12px;font-size:12px;width:auto}
-        #mainApp,#adminPanel{max-width:750px;background:#1e293b;padding:20px;border-radius:20px;margin:auto;border:1px solid #475569;display:none}
-        #adminPanel{max-width:1100px}
-        .header{text-align:center;border-bottom:3px solid #38bdf8;padding-bottom:10px;margin-bottom:15px}
-        label{display:block;margin:10px 0 3px;color:#38bdf8;font-weight:bold;font-size:11px;text-transform:uppercase}
-        .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-        .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-        .sbtn{padding:10px;background:#334155;border:1px solid #475569;border-radius:8px;text-align:center;font-weight:bold;font-size:13px;cursor:pointer}
-        .sbtn.act{background:#38bdf8;color:#0f172a}
-        .chip{display:inline-flex;align-items:center;gap:4px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);padding:5px 10px;border-radius:20px;font-size:12px;margin:2px}
-        .chip span{color:#f43f5e;cursor:pointer;font-weight:bold}
-        .acard{background:#334155;padding:12px;border-radius:12px;margin-top:10px;border:1px solid #475569}
-        .coderow{display:flex;gap:6px;align-items:center;margin-top:6px;background:#1e293b;padding:8px;border-radius:8px;flex-wrap:wrap}
-        .coderow select{flex:2;min-width:130px}
-        .coderow input{flex:1;min-width:50px}
-        .badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;margin-top:5px}
-        .badge-ok{background:#4ade80;color:#0f172a}
-        .badge-warn{background:#fb923c;color:#0f172a}
-        .badge-err{background:#f43f5e;color:#fff}
-        .ftg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
-        .ftb{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;text-align:center;font-size:12px;font-weight:bold;cursor:pointer}
-        .ftb.act{background:#0284c7;color:#fff}
-        .comtrack{background:rgba(56,189,248,0.1);border:2px solid #38bdf8;padding:12px;border-radius:12px;margin-top:10px;text-align:center}
-        .comtrack .big{font-size:26px;font-weight:bold;color:#38bdf8}
-        .comtrack .bar{height:8px;background:#334155;border-radius:4px;margin-top:8px;overflow:hidden}
-        .comtrack .fill{height:100%;background:#38bdf8;border-radius:4px}
-        #workerOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;justify-content:center;align-items:center}
-        .overlay{background:#1e293b;width:90%;max-width:450px;max-height:80vh;overflow-y:auto;border-radius:20px;padding:20px}
-        .witem{padding:10px;border-bottom:1px solid #475569;cursor:pointer}
-        .witem:hover{background:#334155;color:#38bdf8}
-        .err{color:#f43f5e;font-size:13px;margin-top:8px;display:none}
-        .rbox{background:#334155;border:1px solid #475569;padding:15px;border-radius:15px;margin-bottom:10px}
-        .ban{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;background:#38bdf8;color:#0f172a;margin-bottom:6px}
-        .fbtn{padding:8px;background:#334155;border:1px solid #475569;border-radius:6px;color:#fff;font-weight:bold;font-size:13px;cursor:pointer}
-        .fbtn.act{background:#0284c7;border-color:#38bdf8}
-        .manager-box{background:rgba(56,189,248,0.08);border:1px solid #475569;padding:15px;border-radius:12px;margin-bottom:15px;text-align:left}
-        .manager-row{display:flex;justify-content:space-between;align-items:center;padding:8px;background:#334155;border-radius:8px;margin:5px 0;font-size:13px}
-        .manager-row span{color:#f43f5e;cursor:pointer;font-weight:bold;font-size:16px}
-    </style>
-</head>
-<body>
-
-<div id="loginScreen">
-    <div class="login-card">
-        <h2>⚡ APG LOGIN</h2>
-        <p style="color:#94a3b8">Adler Pelzer Group - Bochum</p>
-        <input type="text" id="userInp" placeholder="Nachname">
-        <input type="password" id="passInp" placeholder="Passwort">
-        <button class="btn-p" onclick="doLogin()">ANMELDEN</button>
-        <p id="loginError" class="err"></p>
-    </div>
-</div>
-
-<div id="mainApp">
-    <div class="header"><h2>Adler Pelzer Group</h2><p id="userDisp" style="color:#4ade80;font-weight:bold;margin-top:5px"></p></div>
-    <div class="g2">
-        <div><label>📌 Schicht</label><div class="g3"><div class="sbtn" id="mA" onclick="setS('A')">A</div><div class="sbtn act" id="mB" onclick="setS('B')">B</div><div class="sbtn" id="mC" onclick="setS('C')">C</div></div></div>
-        <div><label>⏳ Schichtart</label><div class="g3"><div class="sbtn" id="tF" onclick="setT('Frühschicht')">Früh</div><div class="sbtn act" id="tS" onclick="setT('Spätschicht')">Spät</div><div class="sbtn" id="tN" onclick="setT('Nachtschicht')">Nacht</div></div></div>
-    </div>
-    <label>👥 Mitarbeiter</label>
-    <div id="wdisp" style="display:flex;flex-wrap:wrap;gap:3px;min-height:25px;margin-bottom:8px"></div>
-    <button class="btn-o" onclick="openW()">➕ Mitarbeiter hinzufügen</button>
-    <div class="g2" style="margin-top:10px">
-        <div><label>📅 Datum</label><input type="date" id="datum"></div>
-        <div><label>🏭 Anlage</label><select id="anlage" onchange="onAn()"><option value="">Bitte wählen...</option><optgroup label="PUR"><option>PUR1</option><option>PUR2</option><option>PUR3</option><option>PUR4</option><option>PUR5</option><option>PUR6</option><option>PUR7</option><option>PUR8</option><option>PUR9</option></optgroup><optgroup label="Spritzguss"><option>IM1</option><option>IM2</option><option>IM3</option><option>IM4</option><option>IM5</option><option>CIM1</option></optgroup><option>COM</option></select></div>
-    </div>
-    <div id="ftBox" style="display:none;margin-top:10px"><label>🧩 Formträger</label><div class="ftg"><div class="ftb" onclick="this.classList.toggle('act')">FT1</div><div class="ftb" onclick="this.classList.toggle('act')">FT2</div><div class="ftb" onclick="this.classList.toggle('act')">FT3</div><div class="ftb" onclick="this.classList.toggle('act')">FT4</div><div class="ftb" onclick="this.classList.toggle('act')">FT5</div><div class="ftb" onclick="this.classList.toggle('act')">FT6</div></div></div>
-    <div id="comBox" style="display:none"><div class="comtrack"><span style="color:#38bdf8;font-weight:bold">⏱️ COMPOUND ZEIT</span><div class="big"><span id="comTot">0</span> / 480 Min</div><div class="bar"><div class="fill" id="comBar" style="width:0%"></div></div><span id="comWarn" style="font-size:12px;color:#4ade80"></span></div></div>
-    <div id="artCont"></div>
-    <button class="btn-o" id="addArtBtn" disabled onclick="addArt()">📦 + Artikel hinzufügen</button>
-    <button class="btn-p" id="sendBtn" disabled onclick="send()">🚀 SPEICHERN & SENDEN</button>
-</div>
-
-<div id="adminPanel">
-    <div class="header">
-        <h2>📊 Dashboard</h2>
-        <p id="adminDisp" style="color:#38bdf8;font-weight:bold;margin-top:3px"></p>
-        <div id="managerBox" class="manager-box" style="display:none">
-            <h3>🔐 Schichtleiter</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <select id="managerSelect" style="flex:2;min-width:150px"></select>
-                <select id="managerSchicht" style="flex:1;min-width:50px"><option>A</option><option selected>B</option><option>C</option></select>
-                <button class="btn-g" onclick="addManager()">➕</button>
-            </div>
-            <div id="managerList" style="margin-top:10px;font-size:12px;color:#94a3b8"></div>
-        </div>
-        <div id="filterGroup" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;max-width:400px;margin:10px auto">
-            <button class="fbtn" id="fA" onclick="filt('A')">🔵 A</button>
-            <button class="fbtn act" id="fB" onclick="filt('B')">🟢 B</button>
-            <button class="fbtn" id="fC" onclick="filt('C')">🟠 C</button>
-        </div>
-        <button class="btn-s" onclick="loadDash()" style="margin:8px auto;display:block">🔄 Aktualisieren</button>
-    </div>
-    <div id="repCont" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:15px"></div>
-</div>
-
-<div id="workerOverlay"><div class="overlay"><h3>👥 Mitarbeiter</h3><div id="wList"></div><input type="text" id="manW" placeholder="✏️ Manuell..."><button class="btn-s" onclick="addMan()">➕</button><button class="btn-p" onclick="closeW()">Schließen</button></div></div>
-
 <script>
-var SCRIPT_URL="https://script.google.com/macros/s/AKfycbz9yjitkqV8gS5xPfEpX1TjqCGMGb5necgLZ1E6OjFoIeFgHejG2cMiP8nH9WDe3dnQTw/exec";
-var PW={"Keskin":"admin123","Test":"test123"};
-var curUser="",curS="B",curT="Spätschicht",staff=[],artCnt=0,filtS="B";
-var schichtLeiter={};
-try{var s=localStorage.getItem('apg_manager');if(s)schichtLeiter=JSON.parse(s);}catch(e){}
-function saveM(){localStorage.setItem('apg_manager',JSON.stringify(schichtLeiter));}
+// ⚠️ DEINE GOOGLE SHEETS DEPLOYMENT URL
+const scriptURL = "https://script.google.com/macros/s/AKfycbwhzsSsyCFQAzZdwEtVTB6itfSVXEp4lXtpX7kg6RxVmS-6HIZtZwkO2W3xNZcle2BXXQ/exec";
 
-var WORKERS={A:["Kunert M.","Karali O.","Mikuczynski K.","Türkmen E.","Amrouch M.","Stania D.","Kantaroglu A.","Krancioch A.","Held D.","Berisha I.","Neji M.","Mulugeta G.","Udezue P.","Jansen M.","Aksoy O.","Yildirim S.","Brand N.","Louze A.","Blanquez Romero V.","Diallo M.D.","Sener E.","Klomrit","Garcia"],B:["Keskin Mur.","Aldirmaz P.","Anderwald R.","Bayrakli F.","Kilic D.","Maafi T.","Besche T.","Eickhoff P.","Toth Renata","Gibba n.","Helf A.","Isbir J.","Jeyakumar S.","Kalisch T.","Kowarsch R.","Nowak M.","Pähler D.","Patarcsity V.","Pulendran K.","Sahin E.","Savas S.","Schiavitelli","Uluyüz B.","Uzun S.","Klomrit","Garcia"],C:["Beher T.","Keskin Mustafa","Kantaroglu Ö.","Savas R.","Rafo S.","Gertz Kevin","Gertz S.","Schönborn Ch.","Fortes Ch.","Sakaguchi M.","Mercan M.","Krämer Ch.","Juretzka T.","Kumbara E.","Skupio D.","Skrago T.","Bah A.","Kaya A.","Jdea A.","Toure A.","Schneider D.","Tchaleu Bertrand","Keskinmus","Klomrit","Garcia"]};
-var CODES={PUR:{aus:["6-2-01 Temperatur zu niedrig","6-2-02 Schaum haftet nicht","6-2-03 Einlegefehler","6-2-04 Schussabbruch","6-2-05 CIM nicht voll","6-2-06 Lippe gerissen","6-2-07 CIM gerissen","7-2-01 Nacharbeit","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-2-01 Ungepl. Inst. WZ","4-2-02 Ungepl. Inst. Masch","4-2-03 Poly/Iso Überdruck","4-2-04 Mischkopf nio","4-2-05 Fehler Lichtschr.","4-2-06 Trennmittelpist.","4-2-07 Formträger Prob.","4-2-08 Reinigung WZ","4-2-09 Not Aus","5-2-01 Logistik Mangel","5-2-02 Keine Teile","5-2-04 Wartezeit Einrichter","5-2-10 Poly/Iso leer","Sonstige"]},Spritz:{aus:["6-1-01 Anfahrschrott","6-1-02 Mat-Umst.","6-1-03 CIM n.voll","6-1-04 CIM gerissen","6-1-06 Einfallstellen","6-1-07 Brandstellen","6-1-08 Silberstreifen","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-1-01 Ungepl. Inst. WZ","4-1-02 Ungepl. Inst. Masch","4-1-03 Mat-Förderung","4-1-04 Dosierprobleme","4-1-05 Schließeinheit","4-1-06 Teileentnahme","4-1-07 WZ-Heizung","4-1-08 Beflammung","5-1-01 Mat-Mangel","5-1-03 Wartezeit Einrichter","Sonstige"]},COM:{aus:["6-3-01 Anfahrschrott","6-3-02 Mat-Fehler","Sonstige"],stoer:["3-01 WZ-Wechsel","3-02 Mat-Umst.","4-3-01 Messer schleifen","4-3-02 Ungepl. Inst. Masch","4-3-04 Silowechsel","5-3-01 Mat-Mangel","5-3-05 Feueralarm","Sonstige"]}};
+let currentSchicht = "B";
+let currentSchichtType = "Spätschicht";
+let selectedStaff = [];
+let loggedInUser = "";
+let autoRefreshInterval = null; 
+let superAdmin = "Keskin";
+let schichtLeiterDb = {};
+let activeFilterSchicht = "B"; 
 
-function doLogin(){var u=document.getElementById('userInp').value.trim();var p=document.getElementById('passInp').value.trim();var e=document.getElementById('loginError');if(!u||!p){e.innerText="❌ Bitte alles ausfüllen!";e.style.display='block';return;}if(PW[u]&&PW[u]===p){e.style.display='none';enterApp(u);}else{e.innerText="❌ Falscher Name oder Passwort!";e.style.display='block';}}
+// Lokale Speicherung der Schichtleiter-Rechte laden
+if(localStorage.getItem('apg_schichtleiter_db')) {
+    try { schichtLeiterDb = JSON.parse(localStorage.getItem('apg_schichtleiter_db')); } catch(e){}
+}
 
-function enterApp(u){
-    curUser=u;document.getElementById('loginScreen').style.display='none';
-    var d=new Date();document.getElementById('datum').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    if(u==="Keskin"){
-        document.getElementById('adminPanel').style.display='block';
-        document.getElementById('adminDisp').innerHTML='👑 Admin: '+u;
-        document.getElementById('managerBox').style.display='block';
-        document.getElementById('filterGroup').style.display='grid';
-        loadManagerSelect();loadManagerList();filt('B');
-    }else if(schichtLeiter[u]){
-        var s=schichtLeiter[u];
-        document.getElementById('adminPanel').style.display='block';
-        document.getElementById('adminDisp').innerHTML='🏃 Schichtleiter: '+u+' (Schicht '+s+')';
-        document.getElementById('managerBox').style.display='none';
-        document.querySelectorAll('#filterGroup .fbtn').forEach(function(b){b.style.display='none';});
-        document.getElementById('f'+s).style.display='block';
-        filt(s);
-    }else{
-        document.getElementById('mainApp').style.display='block';
-        document.getElementById('userDisp').innerHTML='👤 '+u;
-        var f='B';
-        if(WORKERS.A.some(function(w){return w.includes(u)||u.includes(w.split(' ')[0]);}))f='A';
-        if(WORKERS.C.some(function(w){return w.includes(u)||u.includes(w.split(' ')[0]);}))f='C';
-        setS(f);
+function setInitialTodayDate() {
+    const today = new Date();
+    document.getElementById('datum').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
+// Stammdaten der Belegschaft für das Schicht-Reporting
+const workerData = {
+    "A": ["Kunert M.", "Karali O.", "Mikuczynski K.", "Türkmen E.", "Amrouch M.", "Stania D.", "Kantaroglu A.", "Krancioch A.", "Held D.", "Berisha I.", "Neji M.", "Mulugeta G.", "Udezue P.", "Jansen M.", "Aksoy O.", "Yildirim S.", "Brand N.", "Louze A.", "Blanquez Romero V.", "Diallo M.D.", "Sener E.", "Klomrit", "Garcia"],
+    "B": ["Keskin Mur.", "Aldirmaz P.", "Anderwald R.", "Bayrakli F.", "Kilic D.", "Maafi T.", "Besche T.", "Eickhoff P.", "Toth Renata", "Gibba n.", "Helf A.", "Isbir J.", "Jeyakumar S.", "Kalisch T.", "Kowarsch R.", "Nowak M.", "Pähler D.", "Patarcsity V.", "Pulendran K.", "Sahin E.", "Savas S.", "Schiavitelli", "Uluyüz B.", "Uzun S.", "Klomrit", "Garcia"],
+    "C": ["Beher T.", "Keskin Mustafa", "Kantaroglu Ö.", "Savas R.", "Rafo S.", "Gertz Kevin", "Gertz S.", "Schönborn Ch.", "Fortes Ch.", "Sakaguchi M.", "Mercan M.", "Krämer Ch.", "Juretzka T.", "Kumbara E.", "Skupio D.", "Skrago T.", "Bah A.", "Kaya A.", "Jdea A.", "Toure A.", "Schneider D.", "Tchaleu Bertrand", "Keskinmus", "Klomrit", "Garcia"]
+};
+
+// Fehlerkatalog (Ausschuss & Störungen) nach Anlagen-Kategorie
+const codeData = {
+    PUR: {
+        aus: ["6-2-01 Temperatur zu niedrig", "6-2-02 Schaum haftet nicht am Bauteil", "6-2-03 Einlegefehler", "6-2-04 Schussabbruch", "6-2-05 CIM nicht voll ausgeschäumt", "6-2-06 Lippe gerissen", "6-2-07 CIM gerissen", "7-2-01 Nacharbeit am Bauteil (Entgraten, Nachkleben etc.)", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-2-01 Ungepl. Inst. WZ", "4-2-02 Ungepl. Inst. Masch", "4-2-03 Poly/Iso Überdruck", "4-2-04 Mischkopf nio", "4-2-05 Fehler Lichtschr.", "4-2-06 Trennmittelpist.", "4-2-07 Formträger Prob.", "4-2-08 Reinigung WZ", "4-2-09 Not Aus", "5-2-01 Logistik Mangel", "5-2-02 Keine Teile IM/CIM", "5-2-04 Wartezeit Einrichter", "5-2-10 Poly/Iso leer", "Sonstige"]
+    },
+    Spritz: {
+        aus: ["6-1-01 Anfahrschrott", "6-1-02 Mat-Umst.", "6-1-03 CIM n.voll", "6-1-04 CIM gerissen", "6-1-06 Einfallstellen", "6-1-07 Brandstellen", "6-1-08 Silberstreifen", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-1-01 Ungepl. Inst. WZ", "4-1-02 Ungepl. Inst. Masch", "4-1-03 Mat-Förderung Prob.", "4-1-04 Probleme Dosier.", "4-1-05 Probleme Schließeinh.", "4-1-06 Teileentnahme Prob.", "4-1-07 Probleme WZ-Heizung", "4-1-08 Probleme Beflamm.", "5-1-01 Mat-Mangel", "5-1-03 Wartezeit Einrichter", "Sonstige"]
+    },
+    COM: {
+        aus: ["6-3-01 Anfahrschrott", "6-3-02 Mat-Fehler", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-3-01 Messer schleifen", "4-3-02 Ungepl. Inst. Masch", "4-3-04 Silowechsel", "5-3-01 Mat-Mangel", "5-3-05 Feueralarm", "Sonstige"]
+    }
+};
+
+// Passwörter verschlüsselt oder live aus Google Sheet ziehen
+async function loadPasswordsFromSheet() {
+    try {
+        const response = await fetch(`${scriptURL}?action=getSifreler&_cb=${Date.now()}`);
+        if (!response.ok) throw new Error("Netzwerkantwort war nicht ok");
+        return await response.json();
+    } catch(e) {
+        console.error("Passwörter konnten nicht geladen werden:", e);
+        return {};
     }
 }
 
-function loadManagerSelect(){
-    var sel=document.getElementById('managerSelect');
-    var all=[];
-    Object.values(WORKERS).forEach(function(a){a.forEach(function(w){if(all.indexOf(w)===-1&&w!=="Keskin")all.push(w);});});
-    all.sort();
-    sel.innerHTML='<option value="">Mitarbeiter wählen...</option>'+all.map(function(w){return'<option>'+w+'</option>';}).join('');
+// Login-Prüfung
+async function checkLogin() {
+    const u = document.getElementById('userInp').value.trim();
+    const p = document.getElementById('passInp').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    
+    if(!u || !p) {
+        errorDiv.innerText = "❌ Bitte Name und Passwort eingeben!";
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    errorDiv.innerText = "⏳ Verbindung wird aufgebaut...";
+    errorDiv.style.display = 'block';
+    
+    const tokenDb = await loadPasswordsFromSheet();
+    
+    if(tokenDb[u] && tokenDb[u].toString() === p.toString()) {
+        enterApp(u, tokenDb);
+    } else {
+        errorDiv.innerText = "❌ Falscher Benutzername oder Passwort!";
+        errorDiv.style.display = 'block';
+    }
 }
-function addManager(){var n=document.getElementById('managerSelect').value;var s=document.getElementById('managerSchicht').value;if(!n){alert('❌ Bitte wählen!');return;}schichtLeiter[n]=s;saveM();loadManagerList();alert('✅ '+n+' → Schicht '+s);}
-function removeManager(n){if(confirm(n+' entfernen?')){delete schichtLeiter[n];saveM();loadManagerList();}}
-function loadManagerList(){var d=document.getElementById('managerList');var e=Object.entries(schichtLeiter);d.innerHTML=e.length===0?'Keine Schichtleiter':e.map(function(x){return'<div class="manager-row"><span>'+x[0]+' → '+x[1]+'</span><span onclick="removeManager(\''+x[0]+'\')">✕</span></div>';}).join('');}
 
-function setS(s){curS=s;['A','B','C'].forEach(function(x){document.getElementById('m'+x).classList.remove('act');});document.getElementById('m'+s).classList.add('act');staff=[];renderStaff();if(s==='A')setT('Frühschicht');else if(s==='B')setT('Spätschicht');else setT('Nachtschicht');}
-function setT(t){curT=t;['tF','tS','tN'].forEach(function(x){document.getElementById(x).classList.remove('act');});if(t==='Frühschicht')document.getElementById('tF').classList.add('act');else if(t==='Spätschicht')document.getElementById('tS').classList.add('act');else document.getElementById('tN').classList.add('act');}
-function openW(){document.getElementById('wList').innerHTML=WORKERS[curS].map(function(w){return'<div class="witem" onclick="addS(\''+w+'\')">'+w+'</div>';}).join('');document.getElementById('workerOverlay').style.display='flex';}
-function closeW(){document.getElementById('workerOverlay').style.display='none';}
-function addS(n){if(staff.indexOf(n)===-1)staff.push(n);closeW();renderStaff();}
-function addMan(){var v=document.getElementById('manW').value.trim();if(v){staff.push('✍️ '+v);document.getElementById('manW').value='';closeW();renderStaff();}}
-function remS(n){staff=staff.filter(function(x){return x!==n;});renderStaff();}
-function renderStaff(){document.getElementById('wdisp').innerHTML=staff.map(function(s){return'<span class="chip">'+s+' <span onclick="remS(\''+s+'\')">✕</span></span>';}).join('');checkF();}
-function onAn(){var v=document.getElementById('anlage').value;document.getElementById('ftBox').style.display=v.startsWith('PUR')?'block':'none';document.getElementById('comBox').style.display=v==='COM'?'block':'none';document.getElementById('artCont').innerHTML='';document.getElementById('addArtBtn').disabled=v==='';updateCom();checkF();}
-function addArt(){var id=Date.now()+artCnt++;var an=document.getElementById('anlage').value;var cat=an==='COM'?'COM':(an.startsWith('PUR')?'PUR':'Spritz');var div=document.createElement('div');div.className='acard';div.id='a_'+id;var comF='';if(an==='COM')comF='<label>⏱️ Dauer (Min)</label><input type="number" class="adur" placeholder="Minuten" oninput="updateCom();checkF()" style="margin-bottom:6px">';div.innerHTML='<div style="display:flex;justify-content:space-between"><h4>📦 Artikel #'+artCnt+'</h4><span class="btn-d" onclick="this.closest(\'.acard\').remove();updateCom();checkF()">✕</span></div><input type="text" class="aname" placeholder="Artikelnummer" style="margin-bottom:6px">'+comF+'<div class="g2" style="margin-bottom:6px"><div><label style="margin:0;font-size:10px">✅ Gutteile</label><input type="number" class="agut" placeholder="Stk" oninput="checkF()"></div><div><label style="margin:0;font-size:10px">❌ Ausschuss Gesamt</label><input type="number" class="aaus" placeholder="Stk" oninput="checkAus(this);checkF()"></div></div><div class="raus"></div><div class="rsto"></div><div style="display:flex;gap:6px;margin-top:6px"><span class="btn-s" onclick="addRow(\''+id+'\',\'aus\',\''+cat+'\')">+ Ausschuss Grund</span><span class="btn-s" onclick="addRow(\''+id+'\',\'stoer\',\''+cat+'\')">+ Störung Grund</span></div><div class="aus-status"></div>';document.getElementById('artCont').appendChild(div);updateCom();checkF();}
-function addRow(aid,type,cat){var card=document.getElementById('a_'+aid);var cont=card.querySelector('.r'+type);var div=document.createElement('div');div.className='coderow';div.innerHTML='<select class="'+type+'-sel" onchange="togS(this)">'+CODES[cat][type].map(function(c){return'<option>'+c+'</option>';}).join('')+'</select><input type="number" class="'+type+'-val" placeholder="'+(type==='aus'?'Stk':'Min')+'" oninput="if(type===\'aus\')checkAus(this.closest(\'.acard\').querySelector(\'.aaus\'));updateCom();checkF()"><input type="text" class="sinp" placeholder="Grund manuell..." style="display:none;flex:2"><span onclick="this.closest(\'.coderow\').remove();updateCom();checkF()" style="color:#f43f5e;cursor:pointer;font-size:18px">✕</span>';cont.appendChild(div);}
-function togS(sel){sel.closest('.coderow').querySelector('.sinp').style.display=sel.value==='Sonstige'?'block':'none';}
-function checkAus(input){if(!input)return;var card=input.closest('.acard');if(!card)return;var total=parseInt(input.value)||0;var sum=0;card.querySelectorAll('.aus-val').forEach(function(v){sum+=parseInt(v.value)||0;});var sd=card.querySelector('.aus-status');if(!sd)return;if(total===0&&sum===0){sd.innerHTML='';}else if(total===0&&sum>0){sd.innerHTML='<span class="badge badge-warn">⚠️ Gesamt fehlt! '+sum+' Stk</span>';}else if(sum!==total){sd.innerHTML='<span class="badge badge-err">❌ '+sum+'/'+total+' Stk</span>';}else{sd.innerHTML='<span class="badge badge-ok">✅ OK: '+total+' Stk</span>';}}
-function updateCom(){var an=document.getElementById('anlage').value;if(an!=='COM')return;var total=0;document.querySelectorAll('.adur').forEach(function(v){total+=parseInt(v.value)||0;});document.getElementById('comTot').innerText=total;var pct=Math.min((total/480)*100,100);document.getElementById('comBar').style.width=pct+'%';var warn=document.getElementById('comWarn');if(total>480){warn.innerText='⚠️ '+(total-480)+' Min ÜBERSCHRITTEN!';warn.style.color='#f43f5e';}else if(total===480){warn.innerText='✅ Genau 480 Min!';warn.style.color='#4ade80';}else{warn.innerText='Noch '+(480-total)+' Min';warn.style.color='#38bdf8';}}
-function checkF(){var btn=document.getElementById('sendBtn');if(!btn)return;btn.disabled=!(staff.length>0&&document.getElementById('anlage').value!==''&&document.querySelectorAll('.acard').length>0);}
+// App-Steuerung nach erfolgreichem Login
+function enterApp(u, tokenDb = {}) { 
+    loggedInUser = u; 
+    document.getElementById('loginScreen').style.display = 'none'; 
+    setInitialTodayDate();
+    
+    if (u === superAdmin) {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminUserDisplay').innerHTML = "👑 Haupt-Admin: " + u;
+        document.getElementById('rightsManagementBox').style.display = 'flex';
+        document.getElementById('adminFilterGroup').style.display = 'grid';
+        loadUserSelect(tokenDb);
+        updateManagersList();
+        filterSchicht(activeFilterSchicht);
+        startAutoRefresh(); 
+    } 
+    else if (schichtLeiterDb[u]) {
+        const assignedSchicht = schichtLeiterDb[u];
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminUserDisplay').innerHTML = `🏃 Schichtleiter: ${u} (Schicht ${assignedSchicht})`;
+        document.getElementById('rightsManagementBox').style.display = 'none';
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.style.display = 'none');
+        const targetBtn = document.getElementById('flt' + assignedSchicht);
+        if(targetBtn) {
+            targetBtn.style.display = 'inline-block';
+            targetBtn.classList.add('active-filter');
+        }
+        filterSchicht(assignedSchicht);
+        startAutoRefresh(); 
+    } 
+    else {
+        document.getElementById('mainApp').style.display = 'block'; 
+        document.getElementById('currentUserDisplay').innerHTML = "👤 Angemeldet: " + u; 
+        let foundSchicht = "B";
+        if(workerData["A"].some(w => w.includes(u))) foundSchicht = "A";
+        if(workerData["C"].some(w => w.includes(u))) foundSchicht = "C";
+        setSchicht(foundSchicht); 
+    }
+}
 
-function send(){
-    var btn=document.getElementById('sendBtn');btn.disabled=true;btn.innerText='⏳ SENDEN...';
-    var an=document.getElementById('anlage').value,da=document.getElementById('datum').value;
-    var fts=[];document.querySelectorAll('.ftb.act').forEach(function(b){fts.push(b.innerText);});
-    if(an==='COM'){var t=0;document.querySelectorAll('.adur').forEach(function(v){t+=parseInt(v.value)||0;});if(t>480){alert('⚠️ '+t+'/480 Min!');btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';return;}}
-    var data={action:"saveReport",schicht:curS,schichtType:curT,mitarbeiter:staff.join(", "),datum:da,anlage:an,formtraeger:fts.join(", "),user:curUser,rows:[]};
-    document.querySelectorAll('.acard').forEach(function(card){
-        var aname=card.querySelector('.aname').value.trim()||'Unbekannt',agut=card.querySelector('.agut').value||'0',aaus=card.querySelector('.aaus').value||'0',adur=card.querySelector('.adur')?card.querySelector('.adur').value:'',ausDetails=[],stoerDetails=[];
-        card.querySelectorAll('.aus-sel').forEach(function(s,i){var v=card.querySelectorAll('.aus-val')[i];if(v&&v.value){var txt=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;ausDetails.push(txt+' ('+v.value+' Stk)');}});
-        card.querySelectorAll('.stoer-sel').forEach(function(s,i){var v=card.querySelectorAll('.stoer-val')[i];if(v&&v.value){var txt=s.value==='Sonstige'?(card.querySelectorAll('.sinp')[i]?card.querySelectorAll('.sinp')[i].value.trim():s.value):s.value;stoerDetails.push(txt+' ('+v.value+' Min)');}});
-        data.rows.push({artikelNummer:aname,dauer:adur,gutteile:agut,ausschussGesamt:aaus,ausschussDetails:ausDetails.join(" | ")||'Keine',stoerungDetails:stoerDetails.join(" | ")||'Keine'});
+// Automatischer Dashboard-Wechsel während des Schichtwechsels
+function startAutoRefresh() {
+    if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+    autoRefreshInterval = setInterval(() => {
+        const now = new Date();
+        const hrs = now.getHours();
+        const mins = now.getMinutes();
+        const currentTimeNum = (hrs * 100) + mins;
+        
+        const isVardiya1 = (currentTimeNum >= 1330 && currentTimeNum <= 1400); 
+        const isVardiya2 = (currentTimeNum >= 2130 && currentTimeNum <= 2210); 
+        const isVardiya3 = (currentTimeNum >= 530  && currentTimeNum <= 610);  
+
+        if (isVardiya1 || isVardiya2 || isVardiya3) {
+            if (!window.lastRefreshTime || (now - window.lastRefreshTime >= 90000)) {
+                window.lastRefreshTime = now;
+                loadAdminDashboard(); 
+            }
+        }
+    }, 10000); 
+}
+
+function saveNewPassword() { alert("Passwort geändert"); enterApp(loggedInUser); }
+
+// Berechtigungsliste füllen
+function loadUserSelect(tokenDb) {
+    const select = document.getElementById('rightsSelect');
+    const users = Object.keys(tokenDb).filter(x => x !== superAdmin);
+    
+    let html = '<option value="">Mitarbeiter wählen...</option>' + 
+               '<option value="__CLEAR_ALL__" style="color:var(--danger); font-weight:bold;">⚠️ Alle Berechtigungen löschen</option>';
+    
+    users.forEach(u => {
+        html += `<option value="${u}">${u}</option>`;
     });
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)})
-    .then(function(r){return r.json();})
-    .then(function(r){if(r.status==='success'){alert('✅ Gespeichert!');document.getElementById('artCont').innerHTML='';staff=[];renderStaff();document.getElementById('anlage').value='';onAn();}else{alert('❌ '+r.message);}})
-    .catch(function(e){alert('❌ '+e.message);})
-    .finally(function(){btn.disabled=false;btn.innerText='🚀 SPEICHERN & SENDEN';checkF();});
+    select.innerHTML = html;
 }
 
-function loadDash(){
-    var c=document.getElementById('repCont');c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">⏳ Laden...</p>';
-    fetch(SCRIPT_URL+'?action=getReports&schicht='+filtS)
-    .then(function(r){return r.json();})
-    .then(function(d){
-        if(!d||d.length===0){c.innerHTML='<p style="text-align:center;color:#94a3b8;grid-column:1/-1">📭 Keine Daten für Schicht '+filtS+'</p>';return;}
-        d.reverse();c.innerHTML='';
-        d.forEach(function(r){
-            var b=document.createElement('div');b.className='rbox';
-            b.innerHTML='<span class="ban">'+r.anlage+'</span><div style="font-size:12px;color:#e2e8f0;margin-bottom:4px">📅 '+r.datum+' | '+r.schichtType+'</div><div style="font-size:14px;font-weight:bold;color:#fff">📦 '+r.artikelNummer+'</div><div style="font-size:13px;color:#facc15;font-weight:bold">✅ Gut: '+r.gutteile+' | ❌ Aus: '+r.ausschussGes
+function handleRightsSelectChange(value) {
+    if (value === "__CLEAR_ALL__") {
+        if (confirm("Möchten Sie wirklich ALLE Schichtleiter-Berechtigungen löschen?")) {
+            schichtLeiterDb = {};
+            localStorage.setItem('apg_schichtleiter_db', JSON.stringify(schichtLeiterDb));
+            updateManagersList();
+            alert("🗑️ Alle Berechtigungen wurden gelöscht.");
+        }
+        document.getElementById('rightsSelect').value = "";
+    }
+}
+
+function grantSchichtleiterRights() {
+    const name = document.getElementById('rightsSelect').value;
+    const schicht = document.getElementById('assignedSchichtSelect').value;
+    if(!name) { alert("Bitte einen Mitarbeiter wählen!"); return; }
+    schichtLeiterDb[name] = schicht;
+    localStorage.setItem('apg_schichtleiter_db', JSON.stringify(schichtLeiterDb));
+    updateManagersList();
+    alert(`✅ ${name} wurde für Schicht ${schicht} autorisiert.`);
+}
+
+function removeSchichtleiterRight(name) {
+    if (confirm(`Möchten Sie die Berechtigung für ${name} wirklich löschen?`)) {
+        delete schichtLeiterDb[name];
+        localStorage.setItem('apg_schichtleiter_db', JSON.stringify(schichtLeiterDb));
+        updateManagersList();
+        alert(`❌ Berechtigung für ${name} wurde aufgehoben.`);
+    }
+}
+
+function updateManagersList() { 
+    let listText = "Aktiv: ";
+    const entries = Object.entries(schichtLeiterDb);
+    if(entries.length === 0) { listText += "Keine Leiter zugewiesen"; } 
+    else { listText += entries.map(([name, schicht]) => `${name} (${schicht})<span class="delete-manager-btn" onclick="removeSchichtleiterRight('${name}')" title="Löschen">✕</span>`).join(', '); }
+    document.getElementById('currentManagersList').innerHTML = listText; 
+}
+
+// Schicht & Mitarbeiter-Handling
+function setSchicht(s) { 
+    currentSchicht = s; 
+    document.querySelectorAll('.schicht-btn').forEach(btn => {
+        if(!btn.classList.contains('type-btn')) btn.classList.remove('active');
+    });
+    document.getElementById('mSchicht' + s)?.classList.add('active');
+    
+    selectedStaff = []; 
+    renderStaff(); 
+    
+    if (s === "A") setSchichtType('Frühschicht');
+    else if (s === "B") setSchichtType('Spätschicht');
+    else if (s === "C") setSchichtType('Nachtschicht');
+}
+
+function setSchichtType(t) { 
+    currentSchichtType = t; 
+    document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+    if(t === 'Frühschicht') document.getElementById('tFrueh')?.classList.add('active');
+    if(t === 'Spätschicht') document.getElementById('tSpaet')?.classList.add('active');
+    if(t === 'Nachtschicht') document.getElementById('tNacht')?.classList.add('active');
+}
+
+function openWorkerOverlay() { 
+    document.getElementById('workerList').innerHTML = workerData[currentSchicht].map(w => `<div class="worker-opt" onclick="addStaff('${w}')">${w}</div>`).join(""); 
+    document.getElementById('workerOverlay').style.display='flex'; 
+}
+function addStaff(n) { if(!selectedStaff.includes(n)) selectedStaff.push(n); closeOverlay(); renderStaff(); }
+function addManualWorker() { const v = document.getElementById('manualWorker').value.trim(); if(v) { selectedStaff.push("✍️ "+v); document.getElementById('manualWorker').value=""; closeOverlay(); renderStaff(); } }
+function closeOverlay() { document.getElementById('workerOverlay').style.display='none'; }
+function renderStaff() { document.getElementById('workerDisplayContainer').innerHTML = selectedStaff.map(s => `<div class="selected-worker"><span>${s}</span><span onclick="removeStaff('${s}')" style="color:var(--danger); cursor:pointer;">✕</span></div>`).join(""); liveCheck(); }
+function removeStaff(n) { selectedStaff = selectedStaff.filter(x => x !== n); renderStaff(); }
+
+function onAnlageChange(v) { 
+    document.getElementById('ftBox').style.display = v.startsWith("PUR") ? "block" : "none"; 
+    document.getElementById('comTimeBox').style.display = v === "COM" ? "block" : "none"; 
+    document.getElementById('artikelContainer').innerHTML = ""; 
+    document.getElementById('addArtikelBtn').disabled = v === "";
+    liveCheck(); 
+}
+
+// Artikel & Maskengenerierung
+let artikelCounter = 0;
+function addArtikel() {
+    const id = Date.now() + artikelCounter++; 
+    const div = document.createElement('div'); div.className = "section-card artikel-row"; div.id = `art_${id}`;
+    div.innerHTML = `<button onclick="this.parentElement.remove(); liveCheck();" style="position:absolute; right:10px; top:10px; background:var(--danger); color:white; border:none; border-radius:5px; width:26px; height:26px; cursor:pointer;">✕</button>
+        <label>📌 Artikelnummer</label><input type="text" class="art-name" placeholder="z.B. 123456">
+        ${document.getElementById('anlage').value==='COM' ? '<label>⏱️ Dauer (Min)</label><input type="number" class="art-duration" placeholder="Minuten" oninput="liveCheck()">' : ''}
+        <div class="grid-2"><div><label>✅ Gutteile</label><input type="number" class="art-gut" placeholder="Stk. (Optional)" oninput="liveCheck()"></div><div><label>❌ Aus Gesamt</label><input type="number" class="art-aus-total" placeholder="Stk. (Optional)" oninput="liveCheck()"></div></div>
+        <div class="status-badge" id="badge_${id}"></div><div id="rows_${id}"></div>
+        <div style="display:flex; gap:10px; margin-top:10px;"><button class="sub-btn" onclick="addRow('${id}','aus')">+ Ausschuss</button><button class="sub-btn" onclick="addRow('${id}','stoer')">+ Störung</button></div>`;
+    document.getElementById('artikelContainer').appendChild(div);
+    liveCheck();
+}
+
+function addRow(artId, type) {
+    const anl = document.getElementById('anlage').value; 
+    const cat = anl==='COM'?'COM':(anl.startsWith("PUR")?'PUR':'Spritz');
+    const div = document.createElement('div'); div.className="code-row";
+    div.innerHTML = `<div class="code-row-inputs">
+        <select class="${type}-select" style="flex:3;">
+            ${codeData[cat][type].map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+        <input type="number" class="${type}-value" style="flex:1; min-width:80px;" placeholder="${type==='aus'?'Stk':'Min'}" oninput="liveCheck()">
+        <button onclick="this.parentElement.parentElement.remove(); liveCheck();" style="color:var(--danger); background:none; border:none; font-size:18px; cursor:pointer;">✕</button></div>
+        <input type="text" class="sonstige-input" placeholder="Grund manuell..." style="display:none;">`;
+    
+    document.getElementById(`rows_${artId}`).appendChild(div);
+    const select = div.querySelector(`.${type}-select`);
+    const sonstInput = div.querySelector('.sonstige-input');
+    select.onchange = () => { sonstInput.style.display = select.value === 'Sonstige' ? 'block' : 'none'; };
+    liveCheck();
+}
+
+// Live-Eingabeprüfung & Schalthebel-Freigabe
+function liveCheck() {
+    let isValid = true; 
+    let cT = 0;
+    const sendBtn = document.getElementById('mainSendBtn');
+    
+    const hasWorkers = selectedStaff.length > 0;
+    const hasAnlage = document.getElementById('anlage').value !== "";
+    const artikelRows = document.querySelectorAll('.artikel-row');
+    const hasRows = artikelRows.length > 0;
+    
+    artikelRows.forEach(row => {
+        const id = row.id.split('_')[1]; 
+        const artName = row.querySelector('.art-name').value.trim();
+        const t = parseInt(row.querySelector('.art-aus-total').value) || 0;
+        
+        if(!artName) isValid = false;
+        
+        let s = 0; 
+        row.querySelectorAll('.aus-value').forEach(i => s += parseInt(i.value) || 0);
+        const b = document.getElementById('badge_' + id);
+        
+        if (s > 0 && t === 0) {
+            b.className="status-badge status-ok"; 
+            b.innerText = "✅ Auto-Anpassung: " + s;
+        } 
+        else if(t > 0 && t !== s) { 
+            b.className="status-badge status-ok"; 
+            b.innerText = "ℹ️ Info: " + s + " von " + t + " erfasst"; 
+        } else if(t > 0) { 
+            b.className="status-badge status-ok"; 
+            b.innerText = "✅ OK: " + s + "/" + t; 
+        } else { 
+            b.innerText=""; 
+        }
+        
+        if(document.getElementById('anlage').value === 'COM') {
+            cT += (parseInt(row.querySelector('.art-duration').value) || 0);
+        }
+    });
+    
+    if(document.getElementById('anlage').value === 'COM') {
+        document.getElementById('comTotal').innerText = cT;
+    }
+    
+    // Aktivierungsbedingung für den Hauptbutton
+    if(hasWorkers && hasAnlage && hasRows && isValid) {
+        sendBtn.disabled = false;
+    } else {
+        sendBtn.disabled = true;
+    }
+}
+
+// 🚀 DATEN VERARBEITEN & AN GOOGLE SHEETS SENDEN
+async function processReport() {
+    const sendBtn = document.getElementById('mainSendBtn');
+    sendBtn.disabled = true;
+    sendBtn.innerText = "⏳ Wird gesendet...";
+    
+    const datum = document.getElementById('datum').value;
+    const anlage = document.getElementById('anlage').value;
+    
+    // Formträger-Selektion auslesen (falls PUR)
+    let selectedFTs = [];
+    if(anlage.startsWith("PUR")) {
+        document.querySelectorAll('#ftBox .ft-btn.active').forEach(btn => {
+            selectedFTs.push(btn.innerText);
+        });
+    }
+    
+    let payload = {
+        action: "saveReport",
+        user: loggedInUser,
+        schicht: currentSchicht,
+        schichtType: currentSchichtType,
+        datum: datum,
+        anlage: anlage,
+        formtraeger: selectedFTs.join(", "),
+        mitarbeiter: selectedStaff.join(", "),
+        artikel: []
+    };
+    
+    document.querySelectorAll('.artikel-row').forEach(row => {
+        const artName = row.querySelector('.art-name').value.trim();
+        const gutteile = row.querySelector('.art-gut').value || "0";
+        const ausTotal = row.querySelector('.art-aus-total').value || "0";
+        const duration = row.querySelector('.art-duration') ? row.querySelector('.art-duration').value : "0";
+        
+        let ausschussDetails = [];
+        row.querySelectorAll('.code-row').forEach(cRow => {
+            const ausSelect = cRow.querySelector('.aus-select');
+            const ausVal = cRow.querySelector('.aus-value');
+            if(ausSelect && ausVal && ausVal.value) {
+                let grund = ausSelect.value;
+                if(grund === 'Sonstige') grund = cRow.querySelector('.sonstige-input').value || 'Sonstige';
+                ausschussDetails.push(`${grund}: ${ausVal.value} Stk`);
+            }
+            
+            const stoerSelect = cRow.querySelector('.stoer-select');
+            const stoerVal = cRow.querySelector('.stoer-value');
+            if(stoerSelect && stoerVal && stoerVal.value) {
+                let grund = stoerSelect.value;
+                if(grund === 'Sonstige') grund = cRow.querySelector('.sonstige-input').value || 'Sonstige';
+                ausschussDetails.push(`${grund}: ${stoerVal.value} Min`);
+            }
+        });
+        
+        payload.artikel.push({
+            name: artName,
+            gutteile: gutteile,
+            ausschussGesamt: ausTotal,
+            dauer: duration,
+            details: ausschussDetails.join(" | ")
+        });
+    });
+    
+    try {
+        const response = await fetch(scriptURL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const resData = await response.json();
+        if(resData.status === "success") {
+            alert("🚀 Schichtbericht erfolgreich übermittelt!");
+            // Maske zurücksetzen
+            document.getElementById('artikelContainer').innerHTML = "";
+            selectedStaff = [];
+            renderStaff();
+            document.getElementById('anlage').value = "";
+            onAnlageChange("");
+        } else {
+            alert("❌ Fehler beim Speichern: " + resData.message);
+        }
+    } catch(e) {
+        console.error(e);
+        alert("❌ Netzwerkfehler! Konnte nicht an Google Sheets übertragen.");
+    } finally {
+        sendBtn.innerText = "🚀 SPEICHERN & SENDEN";
+        liveCheck();
+    }
+}
+
+// 📊 DASHBOARD LOGIK (FILTERN & RENDER)
+function filterSchicht(s) {
+    activeFilterSchicht = s;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active-filter'));
+    document.getElementById('flt' + s)?.classList.add('active-filter');
+    loadAdminDashboard();
+}
+
+async function loadAdminDashboard() {
+    const container = document.getElementById('reportsContainer');
+    container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--primary);'>⏳ Lade Live-Schichtdaten aus Google Sheets...</p>";
+    
+    try {
+        const response = await fetch(`${scriptURL}?action=getReports&schicht=${activeFilterSchicht}&_cb=${Date.now()}`);
+        const reports = await response.json();
+        
+        if(!reports || reports.length === 0) {
+            container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--text-muted);'>Keine Berichte für diese Schicht heute vorhanden.</p>";
+            return;
+        }
+        
+        container.innerHTML = reports.map(r => `
+            <div class="report-box">
+                <span class="badge-origin">${r.anlage} ${r.formtraeger ? '- ' + r.formtraeger : ''}</span>
+                <div class="report-date">📅 ${r.datum} | ⏳ ${r.schichtType} (${r.schicht})</div>
+                <div class="report-artikel">📦 Artikel: ${r.artikelName}</div>
+                <div class="report-ausschuss">✅ Gut: ${r.gutteile} Stk | ❌ Ausschuss: ${r.ausschussGesamt} Stk</div>
+                <div class="report-störung">📝 Details: ${r.details || 'Keine Ausfälle'}</div>
+                <div class="report-workers">👥 Team: ${r.mitarbeiter}</div>
+                <div style="font-size:11px; margin-top:5px; color:var(--text-muted); text-align:right;">Erstellt von: ${r.user}</div>
+            </div>
+        `).join('');
+        
+    } catch(e) {
+        container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:var(--danger);'>❌ Fehler beim Abrufen der Dashboard-Daten.</p>";
+        console.error(e);
+    }
+}
+</script>
