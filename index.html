@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>APG BOCHUM | SECURE PRO</title>
+  
+  <!-- Apple Meta Tags -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="APG Secure">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: rgba(30, 41, 59, 0.8);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --success: #4ade80;
+      --warning: #fb923c;
+      --danger: #f43f5e;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border-color: #334155;
+      --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      background-image: radial-gradient(circle at 50% 0%, #1e3a5f 0%, #0f172a 70%);
+    }
+
+    /* Glassmorphism Card Base */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+      padding: 24px;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Login & Overlay Screens */
+    .overlay-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+      z-index: 100; display: flex; justify-content: center; align-items: center;
+      padding: 20px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 14px 24px; border-radius: 16px; font-weight: 600; font-size: 15px;
+      cursor: pointer; transition: all 0.3s ease; border: none;
+      text-transform: uppercase; letter-spacing: 0.5px; gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #0f172a; box-shadow: 0 4px 15px var(--primary-glow);
+    }
+    .btn-primary:disabled {
+      background: #475569; color: #94a3b8; box-shadow: none; cursor: not-allowed;
+    }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--primary); color: var(--primary);
+    }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-sm { padding: 8px 16px; font-size: 13px; border-radius: 12px; }
+
+    .input-field {
+      width: 100%; padding: 14px 16px; background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color); border-radius: 14px;
+      color: var(--text-primary); font-size: 15px; outline: none;
+      transition: border-color 0.2s; font-family: var(--font-family);
+    }
+    .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    .chip {
+      background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 12px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--primary); margin-bottom: 10px;
+    }
+
+    .worker-selector, .anlage-selector {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .selectable-item {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+      padding: 10px 16px; border-radius: 14px; cursor: pointer; font-weight: 500;
+      transition: all 0.2s; font-size: 14px;
+    }
+    .selectable-item.active {
+      background: var(--primary); color: #0f172a; border-color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .dashboard-metric {
+      background: var(--bg-secondary); border-radius: 20px; padding: 20px;
+      text-align: center; border: 1px solid var(--border-color);
+    }
+    .metric-value { font-size: 32px; font-weight: 800; color: var(--primary); }
+    .metric-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeInUp 0.4s ease-out forwards; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="overlay-screen">
+  <div class="glass-card" style="max-width: 400px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 20px;">⚡</div>
+    <h2 style="color: var(--primary); margin-bottom: 8px;">APG SECURE PRO</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 30px; font-size: 14px;">Adler Pelzer Group • Bochum</p>
+    <input type="text" id="userInp" class="input-field" placeholder="Nachname" style="margin-bottom: 12px;">
+    <input type="password" id="passInp" class="input-field" placeholder="Passwort" style="margin-bottom: 20px;">
+    <button class="btn btn-primary" style="width: 100%;" onclick="checkLogin()">ANMELDEN</button>
+    <p id="loginError" style="color: var(--danger); font-size: 14px; margin-top: 16px; display: none;"></p>
+  </div>
+</div>
+
+<!-- MAIN APPLICATION (Schichtleiter & Arbeiter) -->
+<div id="mainApp" class="glass-card animate-in" style="display: none;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1 style="font-size: 24px; font-weight: 800;">📋 Schichtbericht</h1>
+    <span id="currentUserDisplay" class="chip"></span>
+  </div>
+
+  <!-- SCHICHT & TYP -->
+  <div class="grid-2" style="margin-bottom: 24px;">
+    <div>
+      <div class="section-title">📌 Schicht</div>
+      <div class="grid-3">
+        <div class="selectable-item" id="mSchichtA" onclick="setSchicht('A')">A</div>
+        <div class="selectable-item active" id="mSchichtB" onclick="setSchicht('B')">B</div>
+        <div class="selectable-item" id="mSchichtC" onclick="setSchicht('C')">C</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">⏳ Schichtart</div>
+      <div class="grid-3">
+        <div class="selectable-item type-btn" id="tFrueh" onclick="setSchichtType('Frühschicht')">Früh</div>
+        <div class="selectable-item type-btn active" id="tSpaet" onclick="setSchichtType('Spätschicht')">Spät</div>
+        <div class="selectable-item type-btn" id="tNacht" onclick="setSchichtType('Nachtschicht')">Nacht</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MITARBEITER -->
+  <div class="section-title">👥 Mitarbeiter</div>
+  <div id="workerDisplayContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;"></div>
+  <button class="btn btn-outline btn-sm" onclick="openWorkerOverlay()" style="width: 100%; margin-bottom: 24px;">➕ Mitarbeiter hinzufügen</button>
+
+  <!-- ANLAGE & DATUM -->
+  <div class="grid-2" style="margin-bottom: 24px;">
+    <div>
+      <div class="section-title">🏭 Anlage</div>
+      <select id="anlage" class="input-field" onchange="onAnlageChange(this.value)">
+        <option value="">Auswählen...</option>
+        <optgroup label="PUR"><option value="PUR1">PUR 1</option><option value="PUR2">PUR 2</option><option value="PUR3">PUR 3</option><option value="PUR4">PUR 4</option><option value="PUR5">PUR 5</option><option value="PUR6">PUR 6</option><option value="PUR7">PUR 7</option><option value="PUR8">PUR 8</option><option value="PUR9">PUR 9</option></optgroup>
+        <optgroup label="Spritzguss"><option value="IM1">IM 1</option><option value="IM2">IM 2</option><option value="IM3">IM 3</option><option value="IM4">IM 4</option><option value="IM5">IM 5</option><option value="CIM1">CIM 1</option></optgroup>
+        <option value="COM">Compound</option>
+      </select>
+    </div>
+    <div>
+      <div class="section-title">📅 Datum</div>
+      <input type="date" id="datum" class="input-field">
+    </div>
+  </div>
+
+  <!-- FORMTRÄGER (PUR) -->
+  <div id="ftBox" style="display: none; margin-bottom: 24px;">
+    <div class="section-title">🧩 Formträger (FT)</div>
+    <div class="worker-selector">
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT1</div>
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT2</div>
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT3</div>
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT4</div>
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT5</div>
+      <div class="selectable-item ft-btn" onclick="this.classList.toggle('active')">FT6</div>
+    </div>
+  </div>
+
+  <!-- ARTIKEL DYNAMIC AREA -->
+  <div id="artikelContainer"></div>
+  <button id="addArtikelBtn" class="btn btn-outline btn-sm" disabled onclick="addArtikel()" style="width: 100%; margin: 16px 0;">📦 + Artikel hinzufügen</button>
+
+  <button id="mainSendBtn" class="btn btn-primary" disabled onclick="processReport()" style="width: 100%;">🚀 SPEICHERN & SENDEN</button>
+</div>
+
+<!-- ADMIN PANEL (Admin & Schichtleiter) -->
+<div id="adminPanel" class="glass-card animate-in" style="display: none; max-width: 1200px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+    <div>
+      <h1 style="font-size: 28px; font-weight: 800;">📊 Live Dashboard</h1>
+      <p id="adminUserDisplay" style="color: var(--primary); font-weight: 600;"></p>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="color: var(--success); font-size: 12px; display: flex; align-items: center; gap: 4px;"><span style="background: var(--success); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span> Live</span>
+      <button class="btn btn-outline btn-sm" onclick="loadAdminDashboard()">🔄 Aktualisieren</button>
+    </div>
+  </div>
+
+  <!-- MANAGEMENT BOX -->
+  <div id="rightsManagementBox" style="display: none; background: var(--bg-secondary); border-radius: 20px; padding: 20px; margin-bottom: 20px;">
+    <div class="section-title">🔐 Schichtleiter-Berechtigungen</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <select id="rightsSelect" class="input-field" style="width: auto; min-width: 200px;" onchange="handleRightsSelectChange(this.value)"></select>
+      <select id="assignedSchichtSelect" class="input-field" style="width: auto;">
+        <option value="A">Schicht A</option>
+        <option value="B" selected>Schicht B</option>
+        <option value="C">Schicht C</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="grantSchichtleiterRights()">➕ Erteilen</button>
+    </div>
+    <div id="currentManagersList" style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);"></div>
+  </div>
+
+  <!-- FILTER & METRICS -->
+  <div class="grid-3" style="margin-bottom: 20px;">
+    <div class="dashboard-metric"><div class="metric-value" id="totalGut">-</div><div class="metric-label">✅ Gutteile Gesamt</div></div>
+    <div class="dashboard-metric"><div class="metric-value" id="totalAus">-</div><div class="metric-label">❌ Ausschuss Gesamt</div></div>
+    <div class="dashboard-metric"><div class="metric-value" id="totalAnlagen">-</div><div class="metric-label">🏭 Aktive Anlagen</div></div>
+  </div>
+
+  <div class="grid-3" id="adminFilterGroup" style="margin-bottom: 20px;">
+    <div class="selectable-item" id="fltA" onclick="filterSchicht('A')">🔵 Schicht A</div>
+    <div class="selectable-item active" id="fltB" onclick="filterSchicht('B')">🟢 Schicht B</div>
+    <div class="selectable-item" id="fltC" onclick="filterSchicht('C')">🟠 Schicht C</div>
+  </div>
+
+  <div id="reportsContainer" class="grid-2" style="gap: 20px;"></div>
+</div>
+
+<!-- WORKER OVERLAY -->
+<div id="workerOverlay" class="overlay-screen" style="display: none;">
+  <div class="glass-card" style="max-width: 450px;">
+    <h3 style="margin-bottom: 20px; color: var(--primary);">👥 Mitarbeiter auswählen</h3>
+    <div id="workerList" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <input type="text" id="manualWorker" class="input-field" placeholder="✏️ Manuell eingeben...">
+      <button class="btn btn-primary btn-sm" onclick="addManualWorker()">➕</button>
+    </div>
+    <button class="btn btn-outline" style="width: 100%;" onclick="document.getElementById('workerOverlay').style.display='none'">Schließen</button>
+  </div>
+</div>
+
+<script>
+// ⚠️ DEINEN SCRIPT URL HIER EINFÜGEN
+const scriptURL = "https://script.google.com/macros/s/AKfycbwhzsSsyCFQAzZdwEtVTB6itfSVXEp4lXtpX7kg6RxVmS-6HIZtZwkO2W3xNZcle2BXXQ/exec";
+
+let currentSchicht = "B";
+let currentSchichtType = "Spätschicht";
+let selectedStaff = [];
+let loggedInUser = "";
+let autoRefreshInterval = null;
+const superAdmin = "Keskin";
+let schichtLeiterDb = JSON.parse(localStorage.getItem('apg_schichtleiter_db') || '{}');
+let activeFilterSchicht = "B";
+let artikelCounter = 0;
+
+const workerData = {
+    "A": ["Kunert M.", "Karali O.", "Mikuczynski K.", "Türkmen E.", "Amrouch M.", "Stania D.", "Kantaroglu A.", "Krancioch A.", "Held D.", "Berisha I.", "Neji M.", "Mulugeta G.", "Udezue P.", "Jansen M.", "Aksoy O.", "Yildirim S.", "Brand N.", "Louze A.", "Blanquez Romero V.", "Diallo M.D.", "Sener E.", "Klomrit", "Garcia"],
+    "B": ["Keskin Mur.", "Aldirmaz P.", "Anderwald R.", "Bayrakli F.", "Kilic D.", "Maafi T.", "Besche T.", "Eickhoff P.", "Toth Renata", "Gibba n.", "Helf A.", "Isbir J.", "Jeyakumar S.", "Kalisch T.", "Kowarsch R.", "Nowak M.", "Pähler D.", "Patarcsity V.", "Pulendran K.", "Sahin E.", "Savas S.", "Schiavitelli", "Uluyüz B.", "Uzun S.", "Klomrit", "Garcia"],
+    "C": ["Beher T.", "Keskin Mustafa", "Kantaroglu Ö.", "Savas R.", "Rafo S.", "Gertz Kevin", "Gertz S.", "Schönborn Ch.", "Fortes Ch.", "Sakaguchi M.", "Mercan M.", "Krämer Ch.", "Juretzka T.", "Kumbara E.", "Skupio D.", "Skrago T.", "Bah A.", "Kaya A.", "Jdea A.", "Toure A.", "Schneider D.", "Tchaleu Bertrand", "Keskinmus", "Klomrit", "Garcia"]
+};
+
+const codeData = {
+    PUR: {
+        aus: ["6-2-01 Temperatur zu niedrig", "6-2-02 Schaum haftet nicht am Bauteil", "6-2-03 Einlegefehler", "6-2-04 Schussabbruch", "6-2-05 CIM nicht voll ausgeschäumt", "6-2-06 Lippe gerissen", "6-2-07 CIM gerissen", "7-2-01 Nacharbeit am Bauteil", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-2-01 Ungepl. Inst. WZ", "4-2-02 Ungepl. Inst. Masch", "4-2-03 Poly/Iso Überdruck", "4-2-04 Mischkopf nio", "4-2-05 Fehler Lichtschr.", "4-2-06 Trennmittelpist.", "4-2-07 Formträger Prob.", "4-2-08 Reinigung WZ", "4-2-09 Not Aus", "5-2-01 Logistik Mangel", "5-2-02 Keine Teile IM/CIM", "5-2-04 Wartezeit Einrichter", "5-2-10 Poly/Iso leer", "Sonstige"]
+    },
+    Spritz: {
+        aus: ["6-1-01 Anfahrschrott", "6-1-02 Mat-Umst.", "6-1-03 CIM n.voll", "6-1-04 CIM gerissen", "6-1-06 Einfallstellen", "6-1-07 Brandstellen", "6-1-08 Silberstreifen", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-1-01 Ungepl. Inst. WZ", "4-1-02 Ungepl. Inst. Masch", "4-1-03 Mat-Förderung Prob.", "4-1-04 Probleme Dosier.", "4-1-05 Probleme Schließeinh.", "4-1-06 Teileentnahme Prob.", "4-1-07 Probleme WZ-Heizung", "4-1-08 Probleme Beflamm.", "5-1-01 Mat-Mangel", "5-1-03 Wartezeit Einrichter", "Sonstige"]
+    },
+    COM: {
+        aus: ["6-3-01 Anfahrschrott", "6-3-02 Mat-Fehler", "Sonstige"],
+        stoer: ["3-01 WZ-Wechsel", "3-02 Mat-Umst.", "4-3-01 Messer schleifen", "4-3-02 Ungepl. Inst. Masch", "4-3-04 Silowechsel", "5-3-01 Mat-Mangel", "5-3-05 Feueralarm", "Sonstige"]
+    }
+};
+
+// ---------- CORE FUNCTIONS (Unverändert in der Logik, aufgewertet im UI) ----------
+async function loadPasswordsFromSheet() {
+    try {
+        const response = await fetch(`${scriptURL}?action=getSifreler&_cb=${Date.now()}`);
+        return await response.json();
+    } catch(e) { console.error("Şifreler alınamadı:", e); return {}; }
+}
+
+async function checkLogin() {
+    const u = document.getElementById('userInp').value.trim();
+    const p = document.getElementById('passInp').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    if(!u || !p) { errorDiv.innerText = "❌ Bitte Name und Passwort eingeben!"; errorDiv.style.display = 'block'; return; }
+    
+    const sifreler = await loadPasswordsFromSheet();
+    if(sifreler[u] && sifreler[u] === p) {
+        enterApp(u);
+    } else {
+        errorDiv.innerText = "❌ Falscher Benutzername oder Passwort!";
+        errorDiv.style.display = 'block';
+    }
+}
+
+function enterApp(u) {
+    loggedInUser = u;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('datum').value = new Date().toISOString().split('T')[0];
+
+    if (u === superAdmin) {
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminUserDisplay').innerHTML = "👑 Haupt-Admin: " + u;
+        document.getElementById('rightsManagementBox').style.display = 'block';
+        document.getElementById('adminFilterGroup').style.display = 'grid';
+        loadUserSelect(); updateManagersList(); filterSchicht('B'); startAutoRefresh();
+    } else if (schichtLeiterDb[u]) {
+        const assignedSchicht = schichtLeiterDb[u];
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminUserDisplay').innerHTML = `🏃 Schichtleiter: ${u} (Schicht ${assignedSchicht})`;
+        document.getElementById('rightsManagementBox').style.display = 'none';
+        document.querySelectorAll('#adminFilterGroup .selectable-item').forEach(b => b.style.display = 'none');
+        const targetBtn = document.getElementById('flt' + assignedSchicht);
+        if(targetBtn) { targetBtn.style.display = 'block'; targetBtn.classList.add('active'); }
+        filterSchicht(assignedSchicht); startAutoRefresh();
+    } else {
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('currentUserDisplay').innerHTML = "👤 " + u;
+        let foundSchicht = "B";
+        if(workerData["A"].some(w => w.includes(u) || u.includes(w.split(" ")[0]))) foundSchicht = "A";
+        if(workerData["C"].some(w => w.includes(u) || u.includes(w.split(" ")[0]))) foundSchicht = "C";
+        setSchicht(foundSchicht);
+    }
+}
+
+function setSchicht(s) {
+    currentSchicht = s;
+    ['A','B','C'].forEach(x => document.getElementById('mSchicht'+x).classList.remove('active'));
+    document.getElementById('mSchicht'+s).classList.add('active');
+    selectedStaff = []; renderStaff();
+    if (s === "A") setSchichtType('Frühschicht');
+    else if (s === "B") setSchichtType('Spätschicht');
+    else setSchichtType('Nachtschicht');
+}
+
+function setSchichtType(t) {
+    currentSchichtType = t;
+    ['tFrueh','tSpaet','tNacht'].forEach(x => document.getElementById(x).classList.remove('active'));
+    if(t === 'Frühschicht') document.getElementById('tFrueh').classList.add('active');
+    else if(t === 'Spätschicht') document.getElementById('tSpaet').classList.add('active');
+    else document.getElementById('tNacht').classList.add('active');
+}
+
+function openWorkerOverlay() {
+    document.getElementById('workerList').innerHTML = workerData[currentSchicht].map(w => 
+        `<div class="selectable-item" onclick="addStaff('${w}')" style="margin-bottom: 6px;">${w}</div>`
+    ).join("");
+    document.getElementById('workerOverlay').style.display = 'flex';
+}
+function addStaff(n) { if(!selectedStaff.includes(n)) selectedStaff.push(n); closeOverlay(); renderStaff(); }
+function addManualWorker() { const v = document.getElementById('manualWorker').value.trim(); if(v) { selectedStaff.push("✍️ "+v); document.getElementById('manualWorker').value=""; closeOverlay(); renderStaff(); } }
+function closeOverlay() { document.getElementById('workerOverlay').style.display = 'none'; }
+function removeStaff(n) { selectedStaff = selectedStaff.filter(x => x !== n); renderStaff(); }
+function renderStaff() {
+    document.getElementById('workerDisplayContainer').innerHTML = selectedStaff.map(s => 
+        `<span class="chip">${s} <span onclick="removeStaff('${s}')" style="cursor:pointer; margin-left:4px; color:var(--danger);">✕</span></span>`
+    ).join("");
+    liveCheck();
+}
+
+function onAnlageChange(v) {
+    document.getElementById('ftBox').style.display = v.startsWith("PUR") ? "block" : "none";
+    document.getElementById('artikelContainer').innerHTML = "";
+    document.getElementById('addArtikelBtn').disabled = v === "";
+    liveCheck();
+}
+
+function addArtikel() {
+    const id = Date.now() + artikelCounter++;
+    const div = document.createElement('div');
+    div.className = "glass-card animate-in";
+    div.id = `art_${id}`;
+    div.style.marginBottom = "16px";
+    div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 16px;">📦 Artikel #${artikelCounter}</h3>
+            <button onclick="this.closest('.glass-card').remove(); liveCheck();" class="btn btn-danger btn-sm">✕ Entfernen</button>
+        </div>
+        <input type="text" class="art-name input-field" placeholder="Artikelnummer" style="margin-bottom: 12px;">
+        ${document.getElementById('anlage').value==='COM' ? '<input type="number" class="art-duration input-field" placeholder="Dauer in Minuten" oninput="liveCheck()" style="margin-bottom: 12px;">' : ''}
+        <div class="grid-2" style="margin-bottom: 12px;">
+            <input type="number" class="art-gut input-field" placeholder="✅ Gutteile" oninput="liveCheck()">
+            <input type="number" class="art-aus-total input-field" placeholder="❌ Ausschuss Gesamt" oninput="liveCheck()">
+        </div>
+        <div id="rows_${id}"></div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button class="btn btn-outline btn-sm" onclick="addRow('${id}','aus')">+ Ausschuss Grund</button>
+            <button class="btn btn-outline btn-sm" onclick="addRow('${id}','stoer')">+ Störung Grund</button>
+        </div>
+    `;
+    document.getElementById('artikelContainer').appendChild(div);
+    liveCheck();
+}
+
+function addRow(artId, type) {
+    const anl = document.getElementById('anlage').value;
+    const cat = anl==='COM'?'COM':(anl.startsWith("PUR")?'PUR':'Spritz');
+    const div = document.createElement('div');
+    div.className = "code-row";
+    div.style.display = "flex"; div.style.gap = "8px"; div.style.marginTop = "8px"; div.style.alignItems = "center";
+    div.innerHTML = `
+        <select class="${type}-select input-field" style="flex:3;">${codeData[cat][type].map(c => `<option>${c}</option>`).join("")}</select>
+        <input type="number" class="${type}-value input-field" style="flex:1;" placeholder="${type==='aus'?'Stk':'Min'}" oninput="liveCheck()">
+        <input type="text" class="sonstige-input input-field" style="flex:2; display:none;" placeholder="Grund manuell...">
+        <button onclick="this.closest('.code-row').remove(); liveCheck();" style="color:var(--danger); background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+    `;
+    document.getElementById(`rows_${artId}`).appendChild(div);
+    div.querySelector(`.${type}-select`).onchange = (e) => {
+        div.querySelector('.sonstige-input').style.display = e.target.value === 'Sonstige' ? 'block' : 'none';
+    };
+    liveCheck();
+}
+
+function liveCheck() {
+    const sendBtn = document.getElementById('mainSendBtn');
+    if (!sendBtn) return;
+    const hasWorkers = selectedStaff.length > 0;
+    const hasAnlage = document.getElementById('anlage').value !== "";
+    const hasRows = document.querySelectorAll('.artikel-row, #artikelContainer .glass-card').length > 0;
+    
+    if(!hasWorkers) { sendBtn.innerText = "👥 MITARBEITER WÄHLEN"; send
